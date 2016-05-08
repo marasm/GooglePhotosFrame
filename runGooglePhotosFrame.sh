@@ -7,3 +7,4 @@ rm -f gfp.log
 
 echo Running the app
 gradle execute > gpf.log
+sleep 30
