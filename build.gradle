@@ -8,12 +8,16 @@ def getAppVersion = { ->
   return props.appVersion
 }
 
-//jar {
-//    manifest {
-//        attributes 'Implementation-Title': 'GooglePhotosFrame',
-//                   'Implementation-Version': version
-//    }
-//}
+allprojects
+{
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+}
+
+task execute(type:JavaExec) {
+   main = 'com.marasm.main.GooglePhotosFrame'
+   classpath = sourceSets.main.runtimeClasspath
+}
 
 repositories {
     mavenCentral()
@@ -39,13 +43,6 @@ sourceSets{
       srcDir 'src/main/resources'
     }
   }  
-//  test
-//  {
-//    java
-//    {
-//      srcDir 'src/test/java'
-//    }
-//  } 
 }
 
 
