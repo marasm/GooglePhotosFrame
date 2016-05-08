@@ -179,6 +179,7 @@ public class GooglePhotosFrame
     catch (Exception e)
     {
       e.printStackTrace();
+      System.out.println("Error in main: " + e.getMessage() + "\n" + e.getStackTrace());
       System.exit(1);
     }
 

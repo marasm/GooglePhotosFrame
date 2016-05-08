@@ -47,5 +47,5 @@ sourceSets{
 
 
 jar {
-  archiveName = "GooglePhotosFrame.jar"
+  archiveName = "google-photos-frame-" + getAppVersion + ".jar"
 }
