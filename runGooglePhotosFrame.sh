@@ -4,5 +4,5 @@ git pull
 echo clean up logs
 rm -f gfp.log
 
-echo Runnig the app
+echo Running the app
 gradle execute > gpf.log
