@@ -8,20 +8,23 @@ def getAppVersion = { ->
   return props.appVersion
 }
 
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'GooglePhotosFrame',
-                   'Implementation-Version': version
-    }
-}
+//jar {
+//    manifest {
+//        attributes 'Implementation-Title': 'GooglePhotosFrame',
+//                   'Implementation-Version': version
+//    }
+//}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
-    testCompile group: 'junit', name: 'junit', version: '4.+'
+    compile        'org.imgscalr:imgscalr-lib:4.2',
+                   'com.google.api-client:google-api-client:1.+',
+                   'com.google.gdata:core:1.47.+'
+                   
+    testCompile    'junit:junit:4.10'
 }
 
 sourceSets{
@@ -35,19 +38,16 @@ sourceSets{
     {
       srcDir 'src/main/resources'
     }
-  }
-  test
-  {
-    java
-    {
-      srcDir 'src/test/java'
-    }
-  } 
+  }  
+//  test
+//  {
+//    java
+//    {
+//      srcDir 'src/test/java'
+//    }
+//  } 
 }
 
-test {
-    systemProperties 'property': 'value'
-}
 
 jar {
   archiveName = "GooglePhotosFrame.jar"
