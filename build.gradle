@@ -1,0 +1,54 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+sourceCompatibility = 1.8
+def getAppVersion = { ->
+  Properties props = new Properties()
+  props.load(new FileInputStream("src/main/resources/app.properties"))
+  return props.appVersion
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'GooglePhotosFrame',
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+}
+
+sourceSets{
+ main
+  {
+    java
+    {
+      srcDirs = ['src/main/java','Common/src']
+    }
+    resources
+    {
+      srcDir 'src/main/resources'
+    }
+  }
+  test
+  {
+    java
+    {
+      srcDir 'src/test/java'
+    }
+  } 
+}
+
+test {
+    systemProperties 'property': 'value'
+}
+
+jar {
+  archiveName = "GooglePhotosFrame.jar"
+}
