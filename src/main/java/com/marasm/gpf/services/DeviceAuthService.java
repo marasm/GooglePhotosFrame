@@ -1,11 +1,11 @@
 /**
  * 
  */
-package com.marasm.services;
+package com.marasm.gpf.services;
 
-import static com.marasm.constants.GPFConstants.API_ACCESS_SCOPE;
-import static com.marasm.constants.GPFConstants.CREDENTIALS_DATA_STORE;
-import static com.marasm.constants.GPFConstants.DEFAULT_USER;
+import static com.marasm.gpf.constants.GPFConstants.API_ACCESS_SCOPE;
+import static com.marasm.gpf.constants.GPFConstants.CREDENTIALS_DATA_STORE;
+import static com.marasm.gpf.constants.GPFConstants.DEFAULT_USER;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,9 +19,9 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.marasm.exceptions.TokenExpiredException;
+import com.marasm.gpf.exceptions.TokenExpiredException;
+import com.marasm.gpf.valueobjects.DeviceCodeResponseVO;
 import com.marasm.util.StringUtil;
-import com.marasm.valueobjects.DeviceCodeResponseVO;
 
 /**
  * @author mkorotkovas

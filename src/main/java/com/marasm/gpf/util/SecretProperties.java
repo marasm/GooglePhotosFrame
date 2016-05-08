@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.marasm.util;
+package com.marasm.gpf.util;
 
 import java.io.FileInputStream;
 import java.io.IOException;

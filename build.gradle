@@ -15,7 +15,7 @@ allprojects
 }
 
 task execute(type:JavaExec) {
-   main = 'com.marasm.main.GooglePhotosFrame'
+   main = 'com.marasm.gpf.main.GooglePhotosFrame'
    classpath = sourceSets.main.runtimeClasspath
 }
 

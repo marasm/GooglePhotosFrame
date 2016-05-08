@@ -1,4 +1,4 @@
-package com.marasm.exceptions;
+package com.marasm.gpf.exceptions;
 public class TokenExpiredException extends Exception
   {
     private static final long serialVersionUID = 1L;

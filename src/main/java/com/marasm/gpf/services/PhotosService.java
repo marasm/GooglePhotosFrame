@@ -1,6 +1,7 @@
-package com.marasm.services;
+package com.marasm.gpf.services;
 
-import static com.marasm.constants.GPFConstants.*;
+import static com.marasm.gpf.constants.GPFConstants.*;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;

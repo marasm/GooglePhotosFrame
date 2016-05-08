@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.marasm.main;
+package com.marasm.gpf.main;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -24,11 +24,11 @@ import java.text.SimpleDateFormat;
 import javax.imageio.ImageIO;
 
 import com.google.api.client.auth.oauth2.TokenResponse;
-import com.marasm.services.DeviceAuthService;
-import com.marasm.services.ImageQueue;
-import com.marasm.util.AppProperties;
-import com.marasm.valueobjects.DeviceCodeResponseVO;
-import com.marasm.valueobjects.PhotoDisplayVO;
+import com.marasm.gpf.services.DeviceAuthService;
+import com.marasm.gpf.services.ImageQueue;
+import com.marasm.gpf.util.AppProperties;
+import com.marasm.gpf.valueobjects.DeviceCodeResponseVO;
+import com.marasm.gpf.valueobjects.PhotoDisplayVO;
 
 /**
  * @author mkorotkovas

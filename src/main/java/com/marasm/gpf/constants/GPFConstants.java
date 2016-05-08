@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.marasm.constants;
+package com.marasm.gpf.constants;
 
 /**
  * @author mkorotkovas

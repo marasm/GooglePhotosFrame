@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.marasm.services;
+package com.marasm.gpf.services;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,8 +13,8 @@ import java.util.Map;
 
 import com.google.api.client.json.GenericJson;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.marasm.exceptions.TokenExpiredException;
-import com.marasm.util.SecretProperties;
+import com.marasm.gpf.exceptions.TokenExpiredException;
+import com.marasm.gpf.util.SecretProperties;
 
 /**
  * @author mkorotkovas

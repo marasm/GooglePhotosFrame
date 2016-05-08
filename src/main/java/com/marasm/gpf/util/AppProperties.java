@@ -1,12 +1,12 @@
 /**
  * 
  */
-package com.marasm.util;
+package com.marasm.gpf.util;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import com.marasm.main.GooglePhotosFrame;
+import com.marasm.gpf.main.GooglePhotosFrame;
 
 /**
  * @author mkorotkovas

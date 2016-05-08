@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.marasm.valueobjects;
+package com.marasm.gpf.valueobjects;
 
 import java.util.Date;
 

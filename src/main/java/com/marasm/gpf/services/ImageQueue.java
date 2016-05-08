@@ -1,4 +1,4 @@
-package com.marasm.services;
+package com.marasm.gpf.services;
 
 import java.awt.Dimension;
 import java.io.IOException;
@@ -12,8 +12,8 @@ import com.google.gdata.data.photos.AlbumEntry;
 import com.google.gdata.data.photos.PhotoEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.gdata.util.ServiceForbiddenException;
-import com.marasm.util.GPFUtils;
-import com.marasm.valueobjects.PhotoDisplayVO;
+import com.marasm.gpf.util.GPFUtils;
+import com.marasm.gpf.valueobjects.PhotoDisplayVO;
 
 public class ImageQueue implements Runnable
 {
