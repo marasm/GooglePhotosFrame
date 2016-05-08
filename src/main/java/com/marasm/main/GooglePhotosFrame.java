@@ -9,6 +9,7 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Label;
 import java.awt.Panel;
+import java.awt.TextArea;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -56,47 +57,11 @@ public class GooglePhotosFrame
       }
       
       
-      //========================Authenticate with Google APIs================================//
-      DeviceAuthService service = new DeviceAuthService();
-      if (service.hasStoredCredentials())
-      {
-        System.out.println("Found stored credentials");
-      }
-      else
-      {
-        System.out.println("Stored credentials NOT found. Will request new.");
-        DeviceCodeResponseVO deviceCodeVO = service.getDeviceAuthCode();
-        
-        System.out.println("Url=" + deviceCodeVO.getVerificationUrl());
-        System.out.println("Code=" + deviceCodeVO.getUserCode());
-        
-        long startTime = System.currentTimeMillis();
-        TokenResponse token = null;
-        while(System.currentTimeMillis() <= startTime + (1000 * deviceCodeVO.getExpiresIn()))
-        {
-          System.out.println("Waiting for Google authorization");
-          Thread.sleep(deviceCodeVO.getInterval() * 1000);
-          
-          token = service.getAccessToken(deviceCodeVO);
-          if (token != null) break;
-        }
-        if (token == null)
-        {
-          System.out.println("Timed out wating for device authorization");
-        }
-        else
-        {
-          System.out.println("Success! access token is: " + token.getAccessToken());
-        }
-        service.storeAccessTokenData(token);
-      }
-      
-      
       //=======================Setup display============================//
       
       Dimension screenSize =  Toolkit.getDefaultToolkit().getScreenSize();
       
-      Frame mainFrame = new Frame("Demo");
+      Frame mainFrame = new Frame("GooglePhotosFrame");
       mainFrame.setSize(screenSize);
       mainFrame.setExtendedState(Frame.MAXIMIZED_BOTH);
       mainFrame.setUndecorated(true);
@@ -120,13 +85,70 @@ public class GooglePhotosFrame
           }
         }
       });
+      mainFrame.setVisible(true);
+      
+      
+      //========================Authenticate with Google APIs================================//
+      DeviceAuthService service = new DeviceAuthService();
+      if (service.hasStoredCredentials())
+      {
+        System.out.println("Found stored credentials");
+      }
+      else
+      {
+        System.out.println("Stored credentials NOT found. Will request new.");
+        DeviceCodeResponseVO deviceCodeVO = service.getDeviceAuthCode();
+        
+        TextArea textArea = new TextArea();
+        textArea.setText(
+              "This device has not been authorized to access Google Photos yet\n"
+            + "-----------------------------------------------------------\n"
+            + "Go to: " + deviceCodeVO.getVerificationUrl() + " on you computer or tablet.\n"
+            + "Enter the following code: " + deviceCodeVO.getUserCode());
+        textArea.setForeground(Color.WHITE);
+        textArea.setBackground(Color.BLACK);
+        textArea.setFocusable(false);
+        textArea.setEditable(false);
+        textArea.setBounds((int)(screenSize.getWidth()/2)-250, (int)(screenSize.getHeight()/2)-50, 500, 100);
+        mainFrame.add(textArea);
+        
+        Label waitingLbl = new Label();
+        waitingLbl.setText("Waiting...");
+        waitingLbl.setForeground(Color.WHITE);
+        waitingLbl.setBounds((int)(screenSize.getWidth()/2)-40, (int)(screenSize.getHeight()/2)+50, 80, 25);
+        mainFrame.add(waitingLbl);
+        
+        System.out.println("Url=" + deviceCodeVO.getVerificationUrl());
+        System.out.println("Code=" + deviceCodeVO.getUserCode());
+        
+        long startTime = System.currentTimeMillis();
+        TokenResponse token = null;
+        while(System.currentTimeMillis() <= startTime + (1000 * deviceCodeVO.getExpiresIn()))
+        {
+          System.out.println("Waiting for Google authorization");
+          Thread.sleep(deviceCodeVO.getInterval() * 1000);
+          
+          token = service.getAccessToken(deviceCodeVO);
+          if (token != null) break;
+        }
+        if (token == null)
+        {
+          throw new Exception("Timed out wating for device authorization");
+        }
+        System.out.println("Success! access token is: " + token.getAccessToken());
+        service.storeAccessTokenData(token);
+        mainFrame.remove(textArea);
+        mainFrame.remove(waitingLbl);
+      }
+      
+      
+      
       
       ImagePanel imagePanel = new GooglePhotosFrame().new ImagePanel();
-//      imagePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
       imagePanel.setLayout(null);
       imagePanel.setSize(mainFrame.getSize());
       mainFrame.add(imagePanel);
-      mainFrame.setVisible(true);
+      
       
       
       ImageQueue imgQueue = new ImageQueue(screenSize);

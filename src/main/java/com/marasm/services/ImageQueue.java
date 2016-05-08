@@ -109,8 +109,8 @@ public class ImageQueue implements Runnable
     }
     catch (Exception e)
     {
-      // TODO
       e.printStackTrace();
+      System.out.println("Error" + e.getMessage());
       cancelled = true;
     }
     System.out.println("Image queue stopped!");
