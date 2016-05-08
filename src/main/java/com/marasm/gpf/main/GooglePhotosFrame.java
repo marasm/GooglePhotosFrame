@@ -178,8 +178,8 @@ public class GooglePhotosFrame
     }
     catch (Exception e)
     {
+      System.out.println("\nError in main: " + e.getMessage());
       e.printStackTrace();
-      System.out.println("Error in main: " + e.getMessage() + "\n" + e.getStackTrace());
       System.exit(1);
     }
 
@@ -198,7 +198,7 @@ public class GooglePhotosFrame
       textLbl = new Label();
       textLbl.setText("Loading pictures...");
       textLbl.setForeground(Color.WHITE);
-      textLbl.setBounds(0, (int)(screenSize.getHeight()-100), (int)screenSize.getWidth(), 25);
+      textLbl.setBounds(0, (int)(screenSize.getHeight()-25), (int)screenSize.getWidth(), 25);
       add(textLbl);
     }
     
