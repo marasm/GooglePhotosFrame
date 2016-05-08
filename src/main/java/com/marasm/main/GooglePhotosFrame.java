@@ -5,9 +5,9 @@ package com.marasm.main;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Label;
 import java.awt.Panel;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
@@ -15,18 +15,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 import javax.imageio.ImageIO;
 
 import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.gdata.data.media.mediarss.MediaContent;
-import com.google.gdata.data.photos.PhotoEntry;
 import com.marasm.services.DeviceAuthService;
 import com.marasm.services.ImageQueue;
 import com.marasm.util.AppProperties;
-import com.marasm.util.GPFUtils;
 import com.marasm.valueobjects.DeviceCodeResponseVO;
+import com.marasm.valueobjects.PhotoDisplayVO;
 
 /**
  * @author mkorotkovas
@@ -121,34 +122,25 @@ public class GooglePhotosFrame
       });
       
       ImagePanel imagePanel = new GooglePhotosFrame().new ImagePanel();
-      imagePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+//      imagePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+      imagePanel.setLayout(null);
       imagePanel.setSize(mainFrame.getSize());
       mainFrame.add(imagePanel);
       mainFrame.setVisible(true);
       
       
-      ImageQueue imgQueue = new ImageQueue();
+      ImageQueue imgQueue = new ImageQueue(screenSize);
       Thread imgQueueThread = new Thread(imgQueue);
       imgQueueThread.start();
+      Thread.sleep(5000);//let the first image load into the queue
       
       while(true)
       {
-        PhotoEntry photo = imgQueue.getNextPhotoEntry();
+        PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
         if (photo != null)
         {
-          if (photo.getMediaContents() != null && !photo.getMediaContents().isEmpty())
-          {
-            MediaContent mediaContent = photo.getMediaContents().get(0);
-            boolean isLandscape = mediaContent.getWidth() > mediaContent.getHeight();
-            System.out.println("Showing Image: " + mediaContent.getUrl());
-            System.out.println("Is landscape: " + isLandscape);
-            imagePanel.setImage(
-                ImageIO.read(new URL(GPFUtils.getSizeSpecificUrlForImage(mediaContent, screenSize)))); 
-          }
-          else
-          {
-            System.out.println("Image has no media url :(");
-          }
+          System.out.println("Showing Image: " + photo.getUrl());
+          imagePanel.setImage(photo); 
         }
         else
         {
@@ -173,23 +165,52 @@ public class GooglePhotosFrame
   public class ImagePanel extends Panel
   {
     private static final long serialVersionUID = 1L;
+    private final SimpleDateFormat SDF = new SimpleDateFormat("MM/dd/yyyy");
     private BufferedImage image;
+    private Label textLbl;
     
+    public ImagePanel()
+    {
+      Dimension screenSize =  Toolkit.getDefaultToolkit().getScreenSize();
+      textLbl = new Label();
+      textLbl.setText("Loading pictures...");
+      textLbl.setForeground(Color.WHITE);
+      textLbl.setBounds(0, (int)(screenSize.getHeight()-100), (int)screenSize.getWidth(), 25);
+      add(textLbl);
+    }
     
     @Override
     public void paint(Graphics inG)
     {
       super.paint(inG);
-      //TODO center image based on dimensions
+      Dimension screenSize =  Toolkit.getDefaultToolkit().getScreenSize();
       if (image != null)
       {
-        inG.drawImage(image, 0, 0, this);
+        int xOffset = 0;
+        int yOffset = 0;
+        
+        if (image.getWidth() < screenSize.getWidth())
+        {
+          xOffset = (int)((screenSize.getWidth()-image.getWidth())/2);
+        }
+        if (image.getHeight() < screenSize.getHeight())
+        {
+          yOffset = (int)((screenSize.getHeight()-image.getHeight())/2);
+        }
+        
+        inG.drawImage(image, 0 + xOffset, 0 + yOffset, this);
+      }
+      else
+      {
+        textLbl.setText("Loading pictures...");
       }
     }
     
-    public void setImage(BufferedImage inImage)
+    public void setImage(PhotoDisplayVO inImage) throws MalformedURLException, IOException
     {
-      image = inImage;
+      image = ImageIO.read(new URL(inImage.getUrl()));
+      textLbl.setText(inImage.getAlbumName() +  
+        (inImage.getDateTaken() != null ? " - (" + SDF.format(inImage.getDateTaken()) + ")" : ""));
       repaint();
     }
   }

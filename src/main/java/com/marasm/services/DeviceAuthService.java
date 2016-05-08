@@ -20,6 +20,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.marasm.exceptions.TokenExpiredException;
+import com.marasm.util.StringUtil;
 import com.marasm.valueobjects.DeviceCodeResponseVO;
 
 /**
@@ -54,6 +55,8 @@ public class DeviceAuthService extends GoogleApiBaseService
     {
       token = sendPostRequest("https://www.googleapis.com/oauth2/v4/token", 
         postParamMap, TokenResponse.class);
+      //refresh token does not get returned on refres call, set it manually
+      token.setRefreshToken(curCredentials.getRefreshToken()); 
       
       return storeAccessTokenData(token);
     }
@@ -71,9 +74,21 @@ public class DeviceAuthService extends GoogleApiBaseService
     DataStore<StoredCredential> storedCredentials = credStoreFactory.getDataStore(CREDENTIALS_DATA_STORE);
     StoredCredential cred = storedCredentials.get(DEFAULT_USER);
     
-    System.out.println("Retrieved stored credentials");
-    System.out.println("Access Token: " + cred.getAccessToken());
-    System.out.println("Refresh Token: " + cred.getRefreshToken());
+    if (cred != null)
+    {
+      System.out.println("Retrieved stored credentials");
+      System.out.println("Access Token: " + cred.getAccessToken());
+      System.out.println("Refresh Token: " + cred.getRefreshToken());
+      
+      if (StringUtil.isEmpty(cred.getAccessToken()) || StringUtil.isEmpty(cred.getRefreshToken()))
+      {
+        throw new IOException("Stored Credentials invalid");
+      }
+    }
+    else
+    {
+      System.out.println("No stored credential found");
+    }
     
     return cred;
   }
