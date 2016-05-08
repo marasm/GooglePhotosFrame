@@ -1,5 +1,6 @@
 echo Getting latest version from GitHub...
 git pull
+git submodule update --recursive --init
 
 echo clean up logs
 rm -f gfp.log
