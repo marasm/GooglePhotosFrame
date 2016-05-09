@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="DEBUG" monitorInterval="30">
+  <Properties>
+    <Property name="app.log.name">logs/app.log</Property>
+    <Property name="root.log.name">logs/root.log</Property>
+    <Property name="app.log.level">debug</Property>
+    <Property name="root.log.level">debug</Property>
+  </Properties>
+  <appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+    </Console>
+    <RollingFile name="RollingFileApp" fileName="${app.log.name}" 
+                 filePattern="${app.log.name}-%i.log.gz">
+      <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+    </RollingFile>
+    <RollingFile name="RollingFileRoot" fileName="${root.log.name}" 
+                 filePattern="${root.log.name}-%i.log.gz">
+      <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+    </RollingFile>
+  </appenders>
+  <Loggers>
+    <Logger name="appLogger" level="${app.log.level}">
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="RollingFileApp" />
+    </Logger>
+    <Root name="rootLogger" level="${root.log.level}">
+      <AppenderRef ref="Console" />
+      <AppenderRef ref="RollingFileRoot" />
+    </Root>
+  </Loggers>
+</configuration>
