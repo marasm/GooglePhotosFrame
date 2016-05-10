@@ -1,32 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration status="DEBUG" monitorInterval="30">
+<Configuration status="ERROR" monitorInterval="30">
   <Properties>
     <Property name="app.log.name">logs/app.log</Property>
     <Property name="root.log.name">logs/root.log</Property>
     <Property name="app.log.level">debug</Property>
     <Property name="root.log.level">debug</Property>
+    <Property name="log.pattern">%d{yyyy-mm-dd HH:mm:ss,SSS} [%t] %-5level %logger{36} - %msg%n</Property>
   </Properties>
-  <appenders>
+  <Appenders>
+    
     <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+      <PatternLayout pattern="${log.pattern}" />
     </Console>
-    <RollingFile name="RollingFileApp" fileName="${app.log.name}" 
-                 filePattern="${app.log.name}-%i.log.gz">
-      <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
-    </RollingFile>
-    <RollingFile name="RollingFileRoot" fileName="${root.log.name}" 
+    
+    <!--RollingFile name="RollingFileApp" fileName="${app.log.name}" 
+                 filePattern="${app.log.name}-%i.log.gz"> 
+      <PatternLayout pattern="${log.pattern}" />
+      <Policies>
+			  <TimeBasedTriggeringPolicy/>
+			</Policies>
+			<DefaultRolloverStrategy max="7"/>
+    </RollingFile-->
+    
+    <!-- RollingFile name="RollingFileRoot" fileName="${root.log.name}" 
                  filePattern="${root.log.name}-%i.log.gz">
-      <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
-    </RollingFile>
-  </appenders>
+      <PatternLayout pattern="${log.pattern}" />
+      <Policies>
+			  <TimeBasedTriggeringPolicy/>
+			</Policies>
+			<DefaultRolloverStrategy max="7"/>
+    </RollingFile-->
+    
+    <File name="RollingFileApp" fileName="${app.log.name}">
+      <PatternLayout pattern="${log.pattern}" />
+    </File>
+    <File name="RollingFileRoot" fileName="${root.log.name}">
+      <PatternLayout pattern="${log.pattern}" />
+    </File>
+  
+  </Appenders>
+  
   <Loggers>
-    <Logger name="appLogger" level="${app.log.level}">
+    <Logger name="appLogger" level="${app.log.level}" additivity="false">
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFileApp" />
     </Logger>
-    <Root name="rootLogger" level="${root.log.level}">
+  
+    <Root level="${root.log.level}" >
       <AppenderRef ref="Console" />
       <AppenderRef ref="RollingFileRoot" />
     </Root>
+  
   </Loggers>
-</configuration>
+</Configuration>

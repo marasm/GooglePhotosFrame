@@ -27,7 +27,7 @@ public class GPFLogger
   {
     if (StringUtil.isEmpty(loggerName))
     {
-      return LoggerFactory.getLogger("rootLogger");
+      return LoggerFactory.getLogger("root");
     }
     else
     {
