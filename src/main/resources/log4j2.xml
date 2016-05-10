@@ -13,31 +13,24 @@
       <PatternLayout pattern="${log.pattern}" />
     </Console>
     
-    <!--RollingFile name="RollingFileApp" fileName="${app.log.name}" 
-                 filePattern="${app.log.name}-%i.log.gz"> 
+    <RollingFile name="RollingFileApp" fileName="${app.log.name}" 
+                 filePattern="${app.log.name}-%d{MM-dd-yyyy}-%i.log"> 
       <PatternLayout pattern="${log.pattern}" />
       <Policies>
 			  <TimeBasedTriggeringPolicy/>
 			</Policies>
 			<DefaultRolloverStrategy max="7"/>
-    </RollingFile-->
+    </RollingFile>
     
-    <!-- RollingFile name="RollingFileRoot" fileName="${root.log.name}" 
-                 filePattern="${root.log.name}-%i.log.gz">
+    <RollingFile name="RollingFileRoot" fileName="${root.log.name}" 
+                 filePattern="${root.log.name}-%d{MM-dd-yyyy}-%i.log">
       <PatternLayout pattern="${log.pattern}" />
       <Policies>
 			  <TimeBasedTriggeringPolicy/>
 			</Policies>
 			<DefaultRolloverStrategy max="7"/>
-    </RollingFile-->
+    </RollingFile>
     
-    <File name="RollingFileApp" fileName="${app.log.name}">
-      <PatternLayout pattern="${log.pattern}" />
-    </File>
-    <File name="RollingFileRoot" fileName="${root.log.name}">
-      <PatternLayout pattern="${log.pattern}" />
-    </File>
-  
   </Appenders>
   
   <Loggers>
