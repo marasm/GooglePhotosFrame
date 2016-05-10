@@ -6,6 +6,8 @@ package com.marasm.gpf.util;
 import java.awt.Dimension;
 
 import com.google.gdata.data.media.mediarss.MediaContent;
+import com.marasm.logger.AppLogger;
+import com.marasm.logger.LogLevel;
 
 /**
  * @author mkorotkovas
@@ -21,7 +23,7 @@ public class GPFUtils
     res.append("/s" + getAppropriateImageSize(inMediaContent, inScreenSize));
     res.append(inMediaContent.getUrl().substring(inMediaContent.getUrl().lastIndexOf("/")));
     
-    System.out.println("Size Specific URL: " + res.toString());
+    AppLogger.log(LogLevel.DEBUG, "Size Specific URL: {}", res.toString());
     return res.toString();
   }
 

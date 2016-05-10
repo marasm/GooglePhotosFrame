@@ -8,16 +8,23 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.google.api.client.util.BackOff;
+import com.google.api.client.util.ExponentialBackOff;
 import com.google.gdata.data.photos.AlbumEntry;
 import com.google.gdata.data.photos.PhotoEntry;
-import com.google.gdata.util.ServiceException;
 import com.google.gdata.util.ServiceForbiddenException;
 import com.marasm.gpf.util.GPFUtils;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
+import com.marasm.logger.AppLogger;
+import com.marasm.logger.LogLevel;
 
 public class ImageQueue implements Runnable
 {
   private static final int MAX_QUEUE_SIZE = 20;
+  private static final int FULL_QUEUE_WAIT_TIME = 2 * 60 * 1000;//2 minutes
+  private static final int INITIAL_ERROR_RETRY_INTERVAL = 1 * 1000;//1 second
+  private static final int MAX_ERROR_RETRY_INTERVAL = 5 * 60 * 1000;//5 minutes
+  private static final int MAX_TIME_ALLOWED_FOR_ERROR_RECOVERY = 30 * 60 * 1000;//30 minutes
   
   private List<AlbumEntry> albums = new ArrayList<AlbumEntry>();
   
@@ -35,11 +42,17 @@ public class ImageQueue implements Runnable
   @Override
   public void run()
   {
-    System.out.println("Starting image queue worker");
+    AppLogger.log(LogLevel.DEBUG, "Starting image queue worker");
     try
     {
       DeviceAuthService authService = new DeviceAuthService();
       PhotosService photosService = new PhotosService(authService);
+      ExponentialBackOff backoff = new ExponentialBackOff.Builder()
+                                                         .setInitialIntervalMillis(INITIAL_ERROR_RETRY_INTERVAL)
+                                                         .setMaxIntervalMillis(MAX_ERROR_RETRY_INTERVAL)
+                                                         .setMaxElapsedTimeMillis(MAX_TIME_ALLOWED_FOR_ERROR_RECOVERY)
+                                                         .build();
+      boolean inErrorRecovery = false;
       
       while (!cancelled)
       {
@@ -49,7 +62,7 @@ public class ImageQueue implements Runnable
           {
             if (albums.isEmpty())
             {
-              System.out.println("Album list empty. Getting a fresh list.");
+              AppLogger.log(LogLevel.DEBUG, "Album list empty. Getting a fresh list.");
               albums = photosService.getAllUserAlbums();
               if (albums == null || albums.isEmpty())
               {
@@ -58,17 +71,18 @@ public class ImageQueue implements Runnable
             }
             // pick a random album and a random pic from it
             AlbumEntry randomAlbum = getRandomAlbum(albums);
-            System.out.println("Picked album: " + randomAlbum.getTitle().getPlainText());
+            AppLogger.log(LogLevel.DEBUG, "Picked album: {}", randomAlbum.getTitle().getPlainText());
             List<PhotoEntry> albumPhotos = photosService.getAlbumPhotos(randomAlbum.getGphotoId());
             if (albumPhotos.isEmpty())
             {
-              System.out.println("Album " + randomAlbum.getTitle().getPlainText() + " is empty. Will pick another");
+              AppLogger.log(LogLevel.DEBUG, "Album {} is empty. Will pick another", 
+                randomAlbum.getTitle().getPlainText());
               continue;
             }
             PhotoEntry randomPhoto = getRandomPhoto(albumPhotos);
             if (randomPhoto.getMediaContents() == null || randomPhoto.getMediaContents().isEmpty())
             {
-              System.out.println("Photo does not have media contents. Skipping");
+              AppLogger.log(LogLevel.DEBUG, "Photo does not have media contents. Skipping");
               continue;
             }
             
@@ -76,29 +90,54 @@ public class ImageQueue implements Runnable
               new PhotoDisplayVO(GPFUtils.getSizeSpecificUrlForImage(randomPhoto.getMediaContents().get(0), screenSize),
                 randomAlbum.getTitle().getPlainText(),
                 randomPhoto.getExifTags() != null ? randomPhoto.getExifTags().getTime() : null);
-            System.out.println("Picked photo: " + randomPhoto.getId());
+            AppLogger.log(LogLevel.DEBUG, "Picked photo: {}", randomPhoto.getGphotoId());
             imageQueue.add(photoDisplayVO);
+            
+            //all operations succeeded reser error flag
+            inErrorRecovery = false;
           }
-          catch (ServiceException e)
+          catch (Exception e)
           {
-            if (e instanceof ServiceForbiddenException)// token expired
+            if (!inErrorRecovery)
             {
-              System.out.println("Access token expired. Refreshing token.");
-              authService.refreshAndStoreAccessToken();
+              inErrorRecovery = true;
+              backoff.reset();
             }
-            else
+            long waitTime = backoff.nextBackOffMillis();
+            if (waitTime != BackOff.STOP)
             {
-              e.printStackTrace();
+              if (e instanceof ServiceForbiddenException)// token expired ==> refresh
+              {
+                AppLogger.log(LogLevel.INFO, "Access token expired. Refreshing token.");
+                try
+                {
+                  authService.refreshAndStoreAccessToken();
+                  continue;
+                }
+                catch (Exception refreshExc) 
+                {
+                  //just log will retry after a pause
+                  AppLogger.log(LogLevel.WARNING, "Error while refreshing token. Will retry.", refreshExc); 
+                }
+              }
+              Thread.sleep(waitTime);
+              continue;
+            }
+            else 
+            {
+              AppLogger.log(LogLevel.ERROR, 
+                "all retries failed and backoff time limit exceeded: unable to recover :(");
               throw e;
             }
+
           }
         }
         else
         {
-          System.out.println("Image queue is full. Wait...");
+          AppLogger.log(LogLevel.DEBUG, "Image queue is full. Wait...");
           try
           {
-            Thread.sleep(120000);
+            Thread.sleep(FULL_QUEUE_WAIT_TIME);
           }
           catch (InterruptedException e)
           {
@@ -109,11 +148,10 @@ public class ImageQueue implements Runnable
     }
     catch (Exception e)
     {
-      e.printStackTrace();
-      System.out.println("Error" + e.getMessage());
+      AppLogger.log(LogLevel.ERROR, "Unrecoverable Error: ", e);
       cancelled = true;
     }
-    System.out.println("Image queue stopped!");
+    AppLogger.log(LogLevel.WARNING, "Image queue stopped!");
   }
   
   private PhotoEntry getRandomPhoto(List<PhotoEntry> inAlbumPhotos)
