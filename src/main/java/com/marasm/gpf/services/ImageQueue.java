@@ -15,6 +15,8 @@ import com.google.gdata.data.photos.PhotoEntry;
 import com.google.gdata.util.ServiceForbiddenException;
 import com.marasm.gpf.util.GPFUtils;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
+import com.marasm.logger.AppLogger;
+import com.marasm.logger.LogLevel;
 
 public class ImageQueue implements Runnable
 {
@@ -40,7 +42,7 @@ public class ImageQueue implements Runnable
   @Override
   public void run()
   {
-    System.out.println("Starting image queue worker");
+    AppLogger.log(LogLevel.DEBUG, "Starting image queue worker");
     try
     {
       DeviceAuthService authService = new DeviceAuthService();
@@ -60,7 +62,7 @@ public class ImageQueue implements Runnable
           {
             if (albums.isEmpty())
             {
-              System.out.println("Album list empty. Getting a fresh list.");
+              AppLogger.log(LogLevel.DEBUG, "Album list empty. Getting a fresh list.");
               albums = photosService.getAllUserAlbums();
               if (albums == null || albums.isEmpty())
               {
@@ -69,17 +71,18 @@ public class ImageQueue implements Runnable
             }
             // pick a random album and a random pic from it
             AlbumEntry randomAlbum = getRandomAlbum(albums);
-            System.out.println("Picked album: " + randomAlbum.getTitle().getPlainText());
+            AppLogger.log(LogLevel.DEBUG, "Picked album: {}", randomAlbum.getTitle().getPlainText());
             List<PhotoEntry> albumPhotos = photosService.getAlbumPhotos(randomAlbum.getGphotoId());
             if (albumPhotos.isEmpty())
             {
-              System.out.println("Album " + randomAlbum.getTitle().getPlainText() + " is empty. Will pick another");
+              AppLogger.log(LogLevel.DEBUG, "Album {} is empty. Will pick another", 
+                randomAlbum.getTitle().getPlainText());
               continue;
             }
             PhotoEntry randomPhoto = getRandomPhoto(albumPhotos);
             if (randomPhoto.getMediaContents() == null || randomPhoto.getMediaContents().isEmpty())
             {
-              System.out.println("Photo does not have media contents. Skipping");
+              AppLogger.log(LogLevel.DEBUG, "Photo does not have media contents. Skipping");
               continue;
             }
             
@@ -87,7 +90,7 @@ public class ImageQueue implements Runnable
               new PhotoDisplayVO(GPFUtils.getSizeSpecificUrlForImage(randomPhoto.getMediaContents().get(0), screenSize),
                 randomAlbum.getTitle().getPlainText(),
                 randomPhoto.getExifTags() != null ? randomPhoto.getExifTags().getTime() : null);
-            System.out.println("Picked photo: " + randomPhoto.getId());
+            AppLogger.log(LogLevel.DEBUG, "Picked photo: {}", randomPhoto.getGphotoId());
             imageQueue.add(photoDisplayVO);
             
             //all operations succeeded reser error flag
@@ -105,7 +108,7 @@ public class ImageQueue implements Runnable
             {
               if (e instanceof ServiceForbiddenException)// token expired ==> refresh
               {
-                System.out.println("Access token expired. Refreshing token.");
+                AppLogger.log(LogLevel.INFO, "Access token expired. Refreshing token.");
                 try
                 {
                   authService.refreshAndStoreAccessToken();
@@ -113,7 +116,8 @@ public class ImageQueue implements Runnable
                 }
                 catch (Exception refreshExc) 
                 {
-                  refreshExc.printStackTrace(); //just log will retry after a pause
+                  //just log will retry after a pause
+                  AppLogger.log(LogLevel.WARNING, "Error while refreshing token. Will retry.", refreshExc); 
                 }
               }
               Thread.sleep(waitTime);
@@ -121,8 +125,8 @@ public class ImageQueue implements Runnable
             }
             else 
             {
-              System.out.println("all retries failed and backoff time limit exceeded == unable to recover :(");
-              e.printStackTrace();
+              AppLogger.log(LogLevel.ERROR, 
+                "all retries failed and backoff time limit exceeded: unable to recover :(");
               throw e;
             }
 
@@ -130,7 +134,7 @@ public class ImageQueue implements Runnable
         }
         else
         {
-          System.out.println("Image queue is full. Wait...");
+          AppLogger.log(LogLevel.DEBUG, "Image queue is full. Wait...");
           try
           {
             Thread.sleep(FULL_QUEUE_WAIT_TIME);
@@ -144,11 +148,10 @@ public class ImageQueue implements Runnable
     }
     catch (Exception e)
     {
-      e.printStackTrace();
-      System.out.println("Error" + e.getMessage());
+      AppLogger.log(LogLevel.ERROR, "Unrecoverable Error: ", e);
       cancelled = true;
     }
-    System.out.println("Image queue stopped!");
+    AppLogger.log(LogLevel.WARNING, "Image queue stopped!");
   }
   
   private PhotoEntry getRandomPhoto(List<PhotoEntry> inAlbumPhotos)

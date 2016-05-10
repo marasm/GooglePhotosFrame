@@ -21,6 +21,8 @@ import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.marasm.gpf.exceptions.TokenExpiredException;
 import com.marasm.gpf.valueobjects.DeviceCodeResponseVO;
+import com.marasm.logger.AppLogger;
+import com.marasm.logger.LogLevel;
 import com.marasm.util.StringUtil;
 
 /**
@@ -40,9 +42,9 @@ public class DeviceAuthService extends GoogleApiBaseService
   public StoredCredential refreshAndStoreAccessToken() throws IOException 
   {
     StoredCredential curCredentials = getStoredCredentials();
-    System.out.println("Refreshing Access Token");
-    System.out.println("Current Token: " + curCredentials.getAccessToken());
-    System.out.println("Refresh Token: " + curCredentials.getRefreshToken());
+    AppLogger.log(LogLevel.INFO, "Refreshing Access Token");
+    AppLogger.log(LogLevel.INFO, "Current Token: {}", curCredentials.getAccessToken());
+    AppLogger.log(LogLevel.INFO, "Refresh Token: {}", curCredentials.getRefreshToken());
     
     Map<String, String> postParamMap = new HashMap<String, String>();
     postParamMap.put("client_id", getClientId());
@@ -76,9 +78,9 @@ public class DeviceAuthService extends GoogleApiBaseService
     
     if (cred != null)
     {
-      System.out.println("Retrieved stored credentials");
-      System.out.println("Access Token: " + cred.getAccessToken());
-      System.out.println("Refresh Token: " + cred.getRefreshToken());
+      AppLogger.log(LogLevel.INFO, "Retrieved stored credentials");
+      AppLogger.log(LogLevel.INFO, "Access Token: {}", cred.getAccessToken());
+      AppLogger.log(LogLevel.INFO, "Refresh Token: {}", cred.getRefreshToken());
       
       if (StringUtil.isEmpty(cred.getAccessToken()) || StringUtil.isEmpty(cred.getRefreshToken()))
       {
@@ -87,7 +89,7 @@ public class DeviceAuthService extends GoogleApiBaseService
     }
     else
     {
-      System.out.println("No stored credential found");
+      AppLogger.log(LogLevel.WARNING, "No stored credential found");
     }
     
     return cred;
@@ -111,11 +113,11 @@ public class DeviceAuthService extends GoogleApiBaseService
     {
       if (!e.getMessage().contains("400"))//400 is expected
       {
-        throw new IOException("Error getting token: " + e.getMessage());
+        throw new IOException("Error getting access new token: " + e.getMessage());
       }
       else
       {
-        System.out.println("Error response: " + e.getMessage());
+        AppLogger.log(LogLevel.DEBUG, "Device not yet authorized: {}", e.getMessage());
         return null;
       }
     }
@@ -155,9 +157,9 @@ public class DeviceAuthService extends GoogleApiBaseService
       .build().setFromTokenResponse(inTokenResponse);
     
     StoredCredential res = new StoredCredential(cred);
-    System.out.println("Storing credentials");
-    System.out.println("Access Token: " + res.getAccessToken());
-    System.out.println("Refresh Token: " + res.getRefreshToken());
+    AppLogger.log(LogLevel.INFO, "Storing credentials");
+    AppLogger.log(LogLevel.INFO, "Access Token: {}", res.getAccessToken());
+    AppLogger.log(LogLevel.INFO, "Refresh Token: {}", res.getRefreshToken());
     credStoreFactory.getDataStore(CREDENTIALS_DATA_STORE).set(DEFAULT_USER, res);
     
     return res;
