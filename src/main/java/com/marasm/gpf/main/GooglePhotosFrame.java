@@ -27,10 +27,10 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.marasm.gpf.services.DeviceAuthService;
 import com.marasm.gpf.services.ImageQueue;
 import com.marasm.gpf.util.AppProperties;
-import com.marasm.gpf.util.AppLogger;
-import com.marasm.gpf.util.LogLevel;
 import com.marasm.gpf.valueobjects.DeviceCodeResponseVO;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
+import com.marasm.logger.AppLogger;
+import com.marasm.logger.LogLevel;
 
 /**
  * @author mkorotkovas
