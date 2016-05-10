@@ -27,7 +27,7 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.marasm.gpf.services.DeviceAuthService;
 import com.marasm.gpf.services.ImageQueue;
 import com.marasm.gpf.util.AppProperties;
-import com.marasm.gpf.util.GPFLogger;
+import com.marasm.gpf.util.AppLogger;
 import com.marasm.gpf.util.LogLevel;
 import com.marasm.gpf.valueobjects.DeviceCodeResponseVO;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
@@ -43,14 +43,14 @@ public class GooglePhotosFrame
   {
     try
     {
-      GPFLogger.initLogger("appLogger");
+      AppLogger.initLogger("appLogger");
       
       String version = AppProperties.getProperty(AppProperties.APP_VERSION_PROP);
       int slideShowDelaySeconds = Integer.valueOf(AppProperties.getProperty(
         AppProperties.SLIDE_SHOW_DELAY_PROP)).intValue();
       boolean useProxy = Boolean.valueOf(AppProperties.getProperty(AppProperties.USE_PROXY_PROP));
-      GPFLogger.log(LogLevel.DEBUG,"Starting Google Photos Frame v" + version);
-      GPFLogger.log(LogLevel.DEBUG,"Slideshow Delay (s): " + slideShowDelaySeconds);
+      AppLogger.log(LogLevel.DEBUG,"Starting Google Photos Frame v" + version);
+      AppLogger.log(LogLevel.DEBUG,"Slideshow Delay (s): " + slideShowDelaySeconds);
       
       if (useProxy)
       {

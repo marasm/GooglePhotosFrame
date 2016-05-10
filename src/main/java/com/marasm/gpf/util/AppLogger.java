@@ -5,6 +5,7 @@ package com.marasm.gpf.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.Util;
 
 import com.marasm.util.StringUtil;
 
@@ -12,7 +13,7 @@ import com.marasm.util.StringUtil;
  * @author makorotkovas
  *
  */
-public class GPFLogger
+public class AppLogger
 {
   private static String loggerName;
   
@@ -27,7 +28,7 @@ public class GPFLogger
   {
     if (StringUtil.isEmpty(loggerName))
     {
-      return LoggerFactory.getLogger("root");
+      return LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     }
     else
     {
@@ -38,27 +39,30 @@ public class GPFLogger
   
   public static void log(LogLevel inLogLevel, String inMsg)
   {
-    Logger logger = getLogger();
+    Logger logger = getLogger(); 
+    Class<?> clazz = Util.getCallingClass();
+    String logStr = "[" + clazz.getSimpleName() + "] - " + inMsg;
+    
     switch (inLogLevel)
     {
       case DEBUG:
-        logger.debug(inMsg);
+        logger.debug(logStr);
         break;
       
       case INFO:
-        logger.info(inMsg);
+        logger.info(logStr);
         break;
       
       case WARNING:
-        logger.warn(inMsg);
+        logger.warn(logStr);
         break;
 
       case ERROR:
-        logger.error(inMsg);
+        logger.error(logStr);
         break;
       
       default:
-        logger.debug(inMsg);
+        logger.debug(logStr);
         break;
     }
   }
@@ -66,81 +70,60 @@ public class GPFLogger
   public static void log( LogLevel inLogLevel, String inMsg, Object... inArgs)
   {
     Logger logger = getLogger();
+    Class<?> clazz = Util.getCallingClass();
+    String logStr = "[" + clazz.getSimpleName() + "] - " + inMsg;
     switch (inLogLevel)
     {
       case DEBUG:
-        logger.debug(inMsg, inArgs);
+        logger.debug(logStr, inArgs);
         break;
         
       case INFO:
-        logger.info(inMsg, inArgs);
+        logger.info(logStr, inArgs);
         break;
         
       case WARNING:
-        logger.warn(inMsg, inArgs);
+        logger.warn(logStr, inArgs);
         break;
         
       case ERROR:
-        logger.error(inMsg, inArgs);
+        logger.error(logStr, inArgs);
         break;
         
       default:
-        logger.debug(inMsg, inArgs);
+        logger.debug(logStr, inArgs);
         break;
     }
   }
   public static void log(LogLevel inLogLevel, String inMsg, Throwable inException)
   {
     Logger logger = getLogger();
+    Class<?> clazz = Util.getCallingClass();
+    String logStr = "[" + clazz.getSimpleName() + "] - " + inMsg;
     switch (inLogLevel)
     {
       case DEBUG:
-        logger.debug(inMsg, inException);
+        logger.debug(logStr, inException);
         break;
         
       case INFO:
-        logger.info(inMsg, inException);
+        logger.info(logStr, inException);
         break;
         
       case WARNING:
-        logger.warn(inMsg, inException);
+        logger.warn(logStr, inException);
         break;
         
       case ERROR:
-        logger.error(inMsg, inException);
+        logger.error(logStr, inException);
         break;
         
       default:
-        logger.debug(inMsg, inException);
+        logger.debug(logStr, inException);
         break;
     }
   }
 
   
-  public static void log(LogLevel inLogLevel, String inMsg, Throwable inException, Object... inArgs)
-  {
-    Logger logger = getLogger();
-    switch (inLogLevel)
-    {
-      case DEBUG:
-        logger.debug(inMsg, inException, inArgs);
-        break;
-        
-      case INFO:
-        logger.info(inMsg, inException, inArgs);
-        break;
-        
-      case WARNING:
-        logger.warn(inMsg, inException, inArgs);
-        break;
-        
-      case ERROR:
-        logger.error(inMsg, inException, inArgs);
-        break;
-        
-      default:
-        logger.debug(inMsg, inException, inArgs);
-        break;
-    }
-  }
+  
 }
