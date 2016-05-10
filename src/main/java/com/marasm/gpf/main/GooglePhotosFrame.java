@@ -54,6 +54,7 @@ public class GooglePhotosFrame
       
       if (useProxy)
       {
+        AppLogger.log(LogLevel.DEBUG, "Setting proxy parameters");
         System.setProperty("http.proxyHost",  AppProperties.getProperty(AppProperties.HTTP_PROXY_HOST_PROP));
         System.setProperty("http.proxyPort",  AppProperties.getProperty(AppProperties.HTTP_PROXY_PORT_PROP));
         System.setProperty("https.proxyHost", AppProperties.getProperty(AppProperties.HTTPS_PROXY_HOST_PROP));
@@ -96,11 +97,11 @@ public class GooglePhotosFrame
       DeviceAuthService service = new DeviceAuthService();
       if (service.hasStoredCredentials())
       {
-        System.out.println("Found stored credentials");
+        AppLogger.log(LogLevel.DEBUG, "Found stored credentials");
       }
       else
       {
-        System.out.println("Stored credentials NOT found. Will request new.");
+        AppLogger.log(LogLevel.WARNING, "Stored credentials NOT found. Will request new.");
         DeviceCodeResponseVO deviceCodeVO = service.getDeviceAuthCode();
         
         TextArea textArea = new TextArea();
@@ -122,14 +123,14 @@ public class GooglePhotosFrame
         waitingLbl.setBounds((int)(screenSize.getWidth()/2)-40, (int)(screenSize.getHeight()/2)+50, 80, 25);
         mainFrame.add(waitingLbl);
         
-        System.out.println("Url=" + deviceCodeVO.getVerificationUrl());
-        System.out.println("Code=" + deviceCodeVO.getUserCode());
+        AppLogger.log(LogLevel.INFO, "Url={}", deviceCodeVO.getVerificationUrl());
+        AppLogger.log(LogLevel.INFO, "Code={}", deviceCodeVO.getUserCode());
         
         long startTime = System.currentTimeMillis();
         TokenResponse token = null;
         while(System.currentTimeMillis() <= startTime + (1000 * deviceCodeVO.getExpiresIn()))
         {
-          System.out.println("Waiting for Google authorization");
+          AppLogger.log(LogLevel.DEBUG, "Waiting for Google authorization");
           Thread.sleep(deviceCodeVO.getInterval() * 1000);
           
           token = service.getAccessToken(deviceCodeVO);
@@ -139,7 +140,7 @@ public class GooglePhotosFrame
         {
           throw new Exception("Timed out wating for device authorization");
         }
-        System.out.println("Success! access token is: " + token.getAccessToken());
+        AppLogger.log(LogLevel.INFO, "Success! access token is: {}", token.getAccessToken());
         service.storeAccessTokenData(token);
         mainFrame.remove(textArea);
         mainFrame.remove(waitingLbl);
@@ -165,12 +166,12 @@ public class GooglePhotosFrame
         PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
         if (photo != null)
         {
-          System.out.println("Showing Image: " + photo.getUrl());
+          AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
           imagePanel.setImage(photo); 
         }
         else
         {
-          System.out.println("Image queue is empty. Waiting for it to be populated.");
+          AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
         }
         if (imgQueue.getCancelled())
         {
@@ -182,8 +183,7 @@ public class GooglePhotosFrame
     }
     catch (Exception e)
     {
-      System.out.println("\nError in main: " + e.getMessage());
-      e.printStackTrace();
+      AppLogger.log(LogLevel.ERROR, "Error in main: " + e.getMessage(), e); 
       System.exit(1);
     }
 
