@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -13,10 +14,12 @@ import com.google.api.client.util.ExponentialBackOff;
 import com.google.gdata.data.photos.AlbumEntry;
 import com.google.gdata.data.photos.PhotoEntry;
 import com.google.gdata.util.ServiceForbiddenException;
+import com.marasm.gpf.util.AppProperties;
 import com.marasm.gpf.util.GPFUtils;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
 import com.marasm.logger.AppLogger;
 import com.marasm.logger.LogLevel;
+import com.marasm.util.StringUtil;
 
 public class ImageQueue implements Runnable
 {
@@ -27,6 +30,8 @@ public class ImageQueue implements Runnable
   private static final int MAX_TIME_ALLOWED_FOR_ERROR_RECOVERY = 30 * 60 * 1000;//30 minutes
   
   private List<AlbumEntry> albums = new ArrayList<AlbumEntry>();
+  
+  private List<String> albumsToIgnore = new ArrayList<String>();
   
   private Queue<PhotoDisplayVO> imageQueue = new ConcurrentLinkedQueue<PhotoDisplayVO>();
   
@@ -53,6 +58,7 @@ public class ImageQueue implements Runnable
                                                          .setMaxElapsedTimeMillis(MAX_TIME_ALLOWED_FOR_ERROR_RECOVERY)
                                                          .build();
       boolean inErrorRecovery = false;
+      albumsToIgnore = getAlbumsToIgnore();
       
       while (!cancelled)
       {
@@ -72,6 +78,13 @@ public class ImageQueue implements Runnable
             // pick a random album and a random pic from it
             AlbumEntry randomAlbum = getRandomAlbum(albums);
             AppLogger.log(LogLevel.DEBUG, "Picked album: {}", randomAlbum.getTitle().getPlainText());
+            if (albumsToIgnore.contains(randomAlbum.getTitle().getPlainText()))
+            {
+              AppLogger.log(LogLevel.DEBUG, "Album {} is in the list to be ignored, skipping.", 
+                randomAlbum.getTitle().getPlainText());
+              continue;
+            }
+            
             List<PhotoEntry> albumPhotos = photosService.getAlbumPhotos(randomAlbum.getGphotoId());
             if (albumPhotos.isEmpty())
             {
@@ -154,6 +167,25 @@ public class ImageQueue implements Runnable
     AppLogger.log(LogLevel.WARNING, "Image queue stopped!");
   }
   
+  protected List<String> getAlbumsToIgnore()
+  {
+    List<String> res = new ArrayList<String>();
+    try
+    {
+      String albumsCSV = AppProperties.getProperty(AppProperties.ALBUMS_TO_IGNORE_PROP);
+      if (!StringUtil.isEmpty(albumsCSV))
+      {
+        String[] albums = albumsCSV.split(",");
+        res.addAll(Arrays.asList(albums));
+      }
+    }
+    catch (IOException e)
+    {
+      AppLogger.log(LogLevel.WARNING,"Unable to get list of albums to ignore. Will use all albums.", e);
+    }
+    return res;
+  }
+
   private PhotoEntry getRandomPhoto(List<PhotoEntry> inAlbumPhotos)
   {
     return inAlbumPhotos.get(new SecureRandom().nextInt(inAlbumPhotos.size()));

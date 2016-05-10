@@ -25,6 +25,7 @@ public class AppProperties
   public static final String SCREEN_OFF_TIME_WEEKDAY_PROP = "screen.on.time.weekday";
   public static final String SCREEN_ON_TIME_WEEKEND_PROP = "screen.off.time.weekend";
   public static final String SCREEN_OFF_TIME_WEEKEND_PROP = "screen.on.time.weekend";
+  public static final String ALBUMS_TO_IGNORE_PROP = "albums.to.ignore";
   
   private static Properties appProperties = new Properties();
   
