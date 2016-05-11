@@ -42,9 +42,9 @@ public class DeviceAuthService extends GoogleApiBaseService
   public StoredCredential refreshAndStoreAccessToken() throws IOException 
   {
     StoredCredential curCredentials = getStoredCredentials();
-    AppLogger.log(LogLevel.INFO, "Refreshing Access Token");
-    AppLogger.log(LogLevel.INFO, "Current Token: {}", curCredentials.getAccessToken());
-    AppLogger.log(LogLevel.INFO, "Refresh Token: {}", curCredentials.getRefreshToken());
+    AppLogger.log(LogLevel.DEBUG, "Refreshing Access Token");
+    AppLogger.log(LogLevel.DEBUG, "Current Token: {}", curCredentials.getAccessToken());
+    AppLogger.log(LogLevel.DEBUG, "Refresh Token: {}", curCredentials.getRefreshToken());
     
     Map<String, String> postParamMap = new HashMap<String, String>();
     postParamMap.put("client_id", getClientId());
@@ -78,9 +78,9 @@ public class DeviceAuthService extends GoogleApiBaseService
     
     if (cred != null)
     {
-      AppLogger.log(LogLevel.INFO, "Retrieved stored credentials");
-      AppLogger.log(LogLevel.INFO, "Access Token: {}", cred.getAccessToken());
-      AppLogger.log(LogLevel.INFO, "Refresh Token: {}", cred.getRefreshToken());
+      AppLogger.log(LogLevel.DEBUG, "Retrieved stored credentials");
+      AppLogger.log(LogLevel.DEBUG, "Access Token: {}", cred.getAccessToken());
+      AppLogger.log(LogLevel.DEBUG, "Refresh Token: {}", cred.getRefreshToken());
       
       if (StringUtil.isEmpty(cred.getAccessToken()) || StringUtil.isEmpty(cred.getRefreshToken()))
       {
@@ -157,9 +157,9 @@ public class DeviceAuthService extends GoogleApiBaseService
       .build().setFromTokenResponse(inTokenResponse);
     
     StoredCredential res = new StoredCredential(cred);
-    AppLogger.log(LogLevel.INFO, "Storing credentials");
-    AppLogger.log(LogLevel.INFO, "Access Token: {}", res.getAccessToken());
-    AppLogger.log(LogLevel.INFO, "Refresh Token: {}", res.getRefreshToken());
+    AppLogger.log(LogLevel.DEBUG, "Storing credentials");
+    AppLogger.log(LogLevel.DEBUG, "Access Token: {}", res.getAccessToken());
+    AppLogger.log(LogLevel.DEBUG, "Refresh Token: {}", res.getRefreshToken());
     credStoreFactory.getDataStore(CREDENTIALS_DATA_STORE).set(DEFAULT_USER, res);
     
     return res;
