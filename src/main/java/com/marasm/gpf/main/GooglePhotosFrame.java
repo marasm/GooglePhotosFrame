@@ -38,6 +38,8 @@ import com.marasm.logger.LogLevel;
  */
 public class GooglePhotosFrame
 {
+  private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 5;
+  private static int errorCounter = 0;
   
   public static void main(String[] args)
   {
@@ -159,24 +161,38 @@ public class GooglePhotosFrame
       ImageQueue imgQueue = new ImageQueue(screenSize);
       Thread imgQueueThread = new Thread(imgQueue);
       imgQueueThread.start();
-      Thread.sleep(5000);//let the first image load into the queue
+      Thread.sleep(10000);//let the first image load into the queue
       
       while(true)
       {
-        PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
-        if (photo != null)
+        try
         {
-          AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
-          imagePanel.setImage(photo); 
+          PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
+          if (photo != null)
+          {
+            AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
+            imagePanel.setImage(photo); 
+          }
+          else
+          {
+            AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
+          }
         }
-        else
+        catch (Exception e)
         {
-          AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
+          AppLogger.log(LogLevel.WARNING, "Error displaying image: ", e);
+          if (errorCounter >= MAX_CONSEQUITIVE_ERRORS_TO_IGNORE)
+          {
+            throw new Exception("Max number of errors in main in a row exceeded. Quiting.");
+          }
+          errorCounter++;
         }
+        
         if (imgQueue.getCancelled())
         {
           throw new Exception("Image task was cancelled. Quitting.");
         }
+        errorCounter = 0; //reset count if all tasks in a loop suceeded
         Thread.sleep(slideShowDelaySeconds * 1000);
       }
       
