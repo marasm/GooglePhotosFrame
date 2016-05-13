@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.imageio.ImageIO;
 
@@ -39,7 +40,6 @@ import com.marasm.logger.LogLevel;
 public class GooglePhotosFrame
 {
   private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 5;
-  
   
   public static void main(String[] args)
   {
@@ -172,6 +172,7 @@ public class GooglePhotosFrame
           {
             AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
             imagePanel.setImage(photo); 
+            checkAndSetAppropriateDisplayMode();
           }
           else
           {
@@ -205,6 +206,26 @@ public class GooglePhotosFrame
 
   }
   
+  private static void checkAndSetAppropriateDisplayMode()
+  {
+    // TODO check the current time and either wake up or put display to sleep according to settings
+    Calendar cal = Calendar.getInstance();
+    int curHour24 = cal.get(Calendar.HOUR_OF_DAY);
+    int curMin = cal.get(Calendar.MINUTE);
+    boolean isWeekEnd = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || 
+      cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
+    
+    if (isWeekEnd)
+    {
+      
+    }
+    else
+    {
+      
+    }
+    
+  }
+
   public class ImagePanel extends Panel
   {
     private static final long serialVersionUID = 1L;
