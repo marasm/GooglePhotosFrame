@@ -39,7 +39,7 @@ import com.marasm.logger.LogLevel;
 public class GooglePhotosFrame
 {
   private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 5;
-  private static int errorCounter = 0;
+  
   
   public static void main(String[] args)
   {
@@ -157,7 +157,7 @@ public class GooglePhotosFrame
       mainFrame.add(imagePanel);
       
       
-      
+      int errorCounter = 0;
       ImageQueue imgQueue = new ImageQueue(screenSize);
       Thread imgQueueThread = new Thread(imgQueue);
       imgQueueThread.start();
