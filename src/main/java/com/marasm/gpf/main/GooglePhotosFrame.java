@@ -204,7 +204,8 @@ public class GooglePhotosFrame
       AppLogger.log(LogLevel.ERROR, "Error in main: " + e.getMessage(), e); 
       System.exit(1);
     }
-
+    AppLogger.log(LogLevel.ERROR, "Reached end of main(). Normally this should not happen.");
+    System.exit(1);
   }
   
   private static void checkAndSetAppropriateDisplayMode()
