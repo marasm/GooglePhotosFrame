@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="ERROR" monitorInterval="30">
   <Properties>
+    <Property name="console.log.level">OFF</Property>
     <Property name="app.log.name">logs/app.log</Property>
     <Property name="root.log.name">logs/root.log</Property>
     <Property name="app.log.level">debug</Property>
@@ -36,12 +37,12 @@
   
   <Loggers>
     <Logger name="appLogger" level="${app.log.level}" additivity="false">
-      <AppenderRef ref="Console" />
+      <AppenderRef ref="Console" level="${console.log.level}"/>
       <AppenderRef ref="RollingFileApp" />
     </Logger>
   
     <Root level="${root.log.level}" >
-      <AppenderRef ref="Console" />
+      <AppenderRef ref="Console" level="${console.log.level}"/>
       <AppenderRef ref="RollingFileRoot" />
     </Root>
   

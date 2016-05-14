@@ -43,6 +43,7 @@ import com.marasm.util.StringUtil;
 public class GooglePhotosFrame
 {
   private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 5;
+  private static boolean isScreenOn = true;
   
   public static void main(String[] args)
   {
@@ -283,12 +284,20 @@ public class GooglePhotosFrame
   
   private static void screenOn() throws IOException
   {
-    new ProcessBuilder("screen.sh", "on").start();
+    if (!isScreenOn)
+    {
+      new ProcessBuilder("screen.sh", "on").start();
+      isScreenOn = true;
+    }
   }
 
   private static void screenOff() throws IOException
   {
-    new ProcessBuilder("screen.sh", "off").start();
+    if (isScreenOn)
+    {
+      new ProcessBuilder("screen.sh", "off").start();
+      isScreenOn = false;
+    }
   }
 
   public class ImagePanel extends Panel
