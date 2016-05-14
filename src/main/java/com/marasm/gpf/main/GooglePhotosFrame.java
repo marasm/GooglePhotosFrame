@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.imageio.ImageIO;
 
@@ -38,6 +39,7 @@ import com.marasm.logger.LogLevel;
  */
 public class GooglePhotosFrame
 {
+  private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 5;
   
   public static void main(String[] args)
   {
@@ -155,28 +157,43 @@ public class GooglePhotosFrame
       mainFrame.add(imagePanel);
       
       
-      
+      int errorCounter = 0;
       ImageQueue imgQueue = new ImageQueue(screenSize);
       Thread imgQueueThread = new Thread(imgQueue);
       imgQueueThread.start();
-      Thread.sleep(5000);//let the first image load into the queue
+      Thread.sleep(10000);//let the first image load into the queue
       
       while(true)
       {
-        PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
-        if (photo != null)
+        try
         {
-          AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
-          imagePanel.setImage(photo); 
+          PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
+          if (photo != null)
+          {
+            AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
+            imagePanel.setImage(photo); 
+            checkAndSetAppropriateDisplayMode();
+          }
+          else
+          {
+            AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
+          }
         }
-        else
+        catch (Exception e)
         {
-          AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
+          AppLogger.log(LogLevel.WARNING, "Error displaying image: ", e);
+          if (errorCounter >= MAX_CONSEQUITIVE_ERRORS_TO_IGNORE)
+          {
+            throw new Exception("Max number of errors in main in a row exceeded. Quiting.");
+          }
+          errorCounter++;
         }
+        
         if (imgQueue.getCancelled())
         {
           throw new Exception("Image task was cancelled. Quitting.");
         }
+        errorCounter = 0; //reset count if all tasks in a loop suceeded
         Thread.sleep(slideShowDelaySeconds * 1000);
       }
       
@@ -189,6 +206,26 @@ public class GooglePhotosFrame
 
   }
   
+  private static void checkAndSetAppropriateDisplayMode()
+  {
+    // TODO check the current time and either wake up or put display to sleep according to settings
+    Calendar cal = Calendar.getInstance();
+    int curHour24 = cal.get(Calendar.HOUR_OF_DAY);
+    int curMin = cal.get(Calendar.MINUTE);
+    boolean isWeekEnd = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || 
+      cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
+    
+    if (isWeekEnd)
+    {
+      
+    }
+    else
+    {
+      
+    }
+    
+  }
+
   public class ImagePanel extends Panel
   {
     private static final long serialVersionUID = 1L;
