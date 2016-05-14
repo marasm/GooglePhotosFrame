@@ -6,7 +6,7 @@
     <Property name="app.log.level">debug</Property>
     <Property name="root.log.level">debug</Property>
     <Property name="log.pattern">%d{yyyy-mm-dd HH:mm:ss,SSS} (%t) %-5level %msg%n</Property>
-    <Property name="log.file.suffix.pattern">-%d{MM-dd-yyyy}-%i.log</Property>
+    <Property name="log.file.suffix.pattern">-%d{MM-dd-yyyy}.log</Property>
   </Properties>
   <Appenders>
     

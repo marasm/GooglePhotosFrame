@@ -23,7 +23,7 @@ import com.marasm.util.StringUtil;
 
 public class ImageQueue implements Runnable
 {
-  private static final int MAX_QUEUE_SIZE = 20;
+  private static final int MAX_QUEUE_SIZE = 10;
   private static final int FULL_QUEUE_WAIT_TIME = 2 * 60 * 1000;//2 minutes
   private static final int INITIAL_ERROR_RETRY_INTERVAL = 1 * 1000;//1 second
   private static final int MAX_ERROR_RETRY_INTERVAL = 5 * 60 * 1000;//5 minutes

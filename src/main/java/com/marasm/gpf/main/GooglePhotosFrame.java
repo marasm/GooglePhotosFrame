@@ -21,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.MissingResourceException;
 
 import javax.imageio.ImageIO;
 
@@ -32,6 +34,7 @@ import com.marasm.gpf.valueobjects.DeviceCodeResponseVO;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
 import com.marasm.logger.AppLogger;
 import com.marasm.logger.LogLevel;
+import com.marasm.util.StringUtil;
 
 /**
  * @author mkorotkovas
@@ -212,20 +215,80 @@ public class GooglePhotosFrame
   {
     // TODO check the current time and either wake up or put display to sleep according to settings
     Calendar cal = Calendar.getInstance();
-    int curHour24 = cal.get(Calendar.HOUR_OF_DAY);
-    int curMin = cal.get(Calendar.MINUTE);
     boolean isWeekEnd = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || 
       cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
-    
-    if (isWeekEnd)
+    try
     {
+      String weekDayOffTimeStr = AppProperties.getProperty(AppProperties.SCREEN_OFF_TIME_WEEKDAY_PROP); 
+      String weekDayOnTimeStr = AppProperties.getProperty(AppProperties.SCREEN_ON_TIME_WEEKDAY_PROP); 
+      String weekEndOffTimeStr = AppProperties.getProperty(AppProperties.SCREEN_OFF_TIME_WEEKEND_PROP); 
+      String weekEndOnTimeStr = AppProperties.getProperty(AppProperties.SCREEN_ON_TIME_WEEKEND_PROP);
       
+      if (StringUtil.isEmpty(weekDayOnTimeStr) ||
+          StringUtil.isEmpty(weekDayOffTimeStr) ||
+          StringUtil.isEmpty(weekEndOnTimeStr) ||
+          StringUtil.isEmpty(weekEndOffTimeStr))
+      {
+        throw new MissingResourceException("One or more screen control parameters are missing", 
+          AppProperties.class.getName(), "screen.*.time.*");
+      }
+      Date weekDayOnTime = createDateBasedOnTimeString(weekDayOnTimeStr);
+      Date weekDayOffTime = createDateBasedOnTimeString(weekDayOffTimeStr);
+      Date weekEndOnTime = createDateBasedOnTimeString(weekEndOnTimeStr);
+      Date weekEndOffTime = createDateBasedOnTimeString(weekEndOffTimeStr);
+      Date curTime = cal.getTime();
+      
+      
+      if (isWeekEnd)
+      {
+        if (curTime.after(weekEndOnTime) && curTime.before(weekEndOffTime))
+        {
+          AppLogger.log(LogLevel.INFO, "Turning screen ON (WE)");
+          screenOn();
+        }
+        else
+        {
+          AppLogger.log(LogLevel.INFO, "Turning screen OFF (WE)");
+          screenOff();
+        }
+      }
+      else
+      {
+        if (curTime.after(weekDayOnTime) && curTime.before(weekDayOffTime))
+        {
+          AppLogger.log(LogLevel.INFO, "Turning screen ON (WD");
+          screenOn();
+        }
+        else
+        {
+          AppLogger.log(LogLevel.INFO, "Turning screen OFF (WD)");
+          screenOff();
+        }
+      }
     }
-    else
+    catch(Exception e)
     {
-      
+      AppLogger.log(LogLevel.ERROR, "Error while checking and setting screen mode: ", e);
     }
-    
+  }
+
+  private static Date createDateBasedOnTimeString(String inTimeStr)
+  {
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.HOUR_OF_DAY, Integer.valueOf(inTimeStr.split(":")[0]));
+    cal.set(Calendar.MINUTE, Integer.valueOf(inTimeStr.split(":")[1]));
+    cal.set(Calendar.SECOND, 0);
+    return cal.getTime();
+  }
+  
+  private static void screenOn() throws IOException
+  {
+    new ProcessBuilder("screen.sh", "on").start();
+  }
+
+  private static void screenOff() throws IOException
+  {
+    new ProcessBuilder("screen.sh", "off").start();
   }
 
   public class ImagePanel extends Panel
