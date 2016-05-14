@@ -244,12 +244,10 @@ public class GooglePhotosFrame
       {
         if (curTime.after(weekEndOnTime) && curTime.before(weekEndOffTime))
         {
-          AppLogger.log(LogLevel.INFO, "Turning screen ON (WE)");
           screenOn();
         }
         else
         {
-          AppLogger.log(LogLevel.INFO, "Turning screen OFF (WE)");
           screenOff();
         }
       }
@@ -257,12 +255,10 @@ public class GooglePhotosFrame
       {
         if (curTime.after(weekDayOnTime) && curTime.before(weekDayOffTime))
         {
-          AppLogger.log(LogLevel.INFO, "Turning screen ON (WD");
           screenOn();
         }
         else
         {
-          AppLogger.log(LogLevel.INFO, "Turning screen OFF (WD)");
           screenOff();
         }
       }
@@ -284,9 +280,10 @@ public class GooglePhotosFrame
   
   private static void screenOn() throws IOException
   {
-    String curDir = System.getProperty("user.dir");
     if (!isScreenOn)
     {
+      String curDir = System.getProperty("user.dir");
+      AppLogger.log(LogLevel.INFO, "Turning screen ON");
       new ProcessBuilder(curDir + "/screen.sh", "on").start();
       isScreenOn = true;
     }
@@ -294,9 +291,10 @@ public class GooglePhotosFrame
 
   private static void screenOff() throws IOException
   {
-    String curDir = System.getProperty("user.dir");
     if (isScreenOn)
     {
+      String curDir = System.getProperty("user.dir");
+      AppLogger.log(LogLevel.INFO, "Turning screen OFF");
       new ProcessBuilder(curDir + "/screen.sh", "off").start();
       isScreenOn = false;
     }
