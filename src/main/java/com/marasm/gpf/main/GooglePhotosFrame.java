@@ -285,9 +285,9 @@ public class GooglePhotosFrame
   private static void screenOn() throws IOException
   {
     String curDir = System.getProperty("user.dir");
+    new ProcessBuilder(curDir + "/screen.sh", "on").start();
     if (!isScreenOn)
     {
-      new ProcessBuilder(curDir + "/screen.sh", "on").start();
       isScreenOn = true;
     }
   }
