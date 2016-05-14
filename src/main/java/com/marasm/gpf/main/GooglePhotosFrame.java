@@ -284,18 +284,20 @@ public class GooglePhotosFrame
   
   private static void screenOn() throws IOException
   {
+    String curDir = System.getProperty("user.dir");
     if (!isScreenOn)
     {
-      new ProcessBuilder("screen.sh", "on").start();
+      new ProcessBuilder(curDir + "/screen.sh", "on").start();
       isScreenOn = true;
     }
   }
 
   private static void screenOff() throws IOException
   {
+    String curDir = System.getProperty("user.dir");
     if (isScreenOn)
     {
-      new ProcessBuilder("screen.sh", "off").start();
+      new ProcessBuilder(curDir + "/screen.sh", "off").start();
       isScreenOn = false;
     }
   }
