@@ -187,6 +187,7 @@ public class GooglePhotosFrame
             throw new Exception("Max number of errors in main in a row exceeded. Quiting.");
           }
           errorCounter++;
+          continue;
         }
         
         if (imgQueue.getCancelled())
