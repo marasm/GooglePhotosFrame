@@ -42,7 +42,7 @@ import com.marasm.util.StringUtil;
  */
 public class GooglePhotosFrame
 {
-  private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 5;
+  private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 10;
   private static boolean isScreenOn = true;
   
   public static void main(String[] args) throws IOException
@@ -186,6 +186,7 @@ public class GooglePhotosFrame
             AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
             imagePanel.setImage(photo); 
             checkAndSetAppropriateDisplayMode();
+            errorCounter = 0; //reset count if all tasks in a loop suceeded
           }
           else
           {
@@ -200,14 +201,12 @@ public class GooglePhotosFrame
             throw new Exception("Max number of errors in main in a row exceeded. Quiting.");
           }
           errorCounter++;
-          continue;
         }
         
         if (imgQueue.getCancelled())
         {
           throw new Exception("Image task was cancelled. Quitting.");
         }
-        errorCounter = 0; //reset count if all tasks in a loop suceeded
         Thread.sleep(slideShowDelaySeconds * 1000);
       }
       
