@@ -45,7 +45,7 @@ public class GooglePhotosFrame
   private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 5;
   private static boolean isScreenOn = true;
   
-  public static void main(String[] args)
+  public static void main(String[] args) throws IOException
   {
     try
     {
@@ -93,6 +93,15 @@ public class GooglePhotosFrame
           if (inE.getKeyCode() == KeyEvent.VK_ESCAPE)
           {
             System.exit(0);
+          }
+          //try to wake the screen
+          try
+          {
+            screenOn();
+          }
+          catch(Exception e)
+          {
+            AppLogger.log(LogLevel.ERROR, "Error waking screen on key press" ,e);
           }
         }
       });
@@ -206,15 +215,17 @@ public class GooglePhotosFrame
     catch (Exception e)
     {
       AppLogger.log(LogLevel.ERROR, "Error in main: " + e.getMessage(), e); 
+      screenOn();
       System.exit(1);
     }
     AppLogger.log(LogLevel.ERROR, "Reached end of main(). Normally this should not happen.");
+    screenOn();
     System.exit(1);
   }
   
   private static void checkAndSetAppropriateDisplayMode()
   {
-    // TODO check the current time and either wake up or put display to sleep according to settings
+    // check the current time and either wake up or put display to sleep according to settings
     Calendar cal = Calendar.getInstance();
     boolean isWeekEnd = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || 
       cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
