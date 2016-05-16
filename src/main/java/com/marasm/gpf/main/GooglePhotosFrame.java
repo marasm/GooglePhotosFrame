@@ -180,18 +180,21 @@ public class GooglePhotosFrame
       {
         try
         {
-          PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
-          if (photo != null)
+          checkAndSetAppropriateDisplayMode();
+          if (isScreenOn)
           {
-            AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
-            imagePanel.setImage(photo); 
-            checkAndSetAppropriateDisplayMode();
-            errorCounter = 0; //reset count if all tasks in a loop suceeded
+            PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
+            if (photo != null)
+            {
+              AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
+              imagePanel.setImage(photo); 
+            }
+            else
+            {
+              AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
+            }
           }
-          else
-          {
-            AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
-          }
+          errorCounter = 0; //reset count if all tasks in a loop suceeded
         }
         catch (Exception e)
         {
