@@ -26,7 +26,7 @@ public class ImageQueue implements Runnable
   private static final int MAX_QUEUE_SIZE = 10;
   private static final int FULL_QUEUE_WAIT_TIME = 2 * 60 * 1000;//2 minutes
   private static final int INITIAL_ERROR_RETRY_INTERVAL = 1 * 1000;//1 second
-  private static final int MAX_ERROR_RETRY_INTERVAL = 5 * 60 * 1000;//5 minutes
+  private static final int MAX_ERROR_RETRY_INTERVAL = 15 * 60 * 1000;//5 minutes
   private static final int MAX_TIME_ALLOWED_FOR_ERROR_RECOVERY = 30 * 60 * 1000;//30 minutes
   
   private List<AlbumEntry> albums = new ArrayList<AlbumEntry>();
@@ -111,6 +111,7 @@ public class ImageQueue implements Runnable
           }
           catch (Exception e)
           {
+            AppLogger.log(LogLevel.DEBUG, "Error detected: {}. Will try to recover.", e.getMessage());
             if (!inErrorRecovery)
             {
               inErrorRecovery = true;
