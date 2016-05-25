@@ -90,11 +90,7 @@ public class GooglePhotosFrame
         public void keyPressed(KeyEvent inE)
         {
           super.keyPressed(inE);
-          if (inE.getKeyCode() == KeyEvent.VK_ESCAPE)
-          {
-            System.exit(0);
-          }
-          //try to wake the screen
+          //first try to wake the screen
           try
           {
             screenOn();
@@ -103,6 +99,12 @@ public class GooglePhotosFrame
           {
             AppLogger.log(LogLevel.ERROR, "Error waking screen on key press" ,e);
           }
+          
+          if (inE.getKeyCode() == KeyEvent.VK_ESCAPE)
+          {
+            System.exit(0);
+          }
+          
         }
       });
       mainFrame.setVisible(true);
