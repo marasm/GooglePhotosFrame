@@ -21,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.MissingResourceException;
 
 import javax.imageio.ImageIO;
 
@@ -32,6 +34,7 @@ import com.marasm.gpf.valueobjects.DeviceCodeResponseVO;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
 import com.marasm.logger.AppLogger;
 import com.marasm.logger.LogLevel;
+import com.marasm.util.StringUtil;
 
 /**
  * @author mkorotkovas
@@ -39,9 +42,10 @@ import com.marasm.logger.LogLevel;
  */
 public class GooglePhotosFrame
 {
-  private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 5;
+  private static final int MAX_CONSEQUITIVE_ERRORS_TO_IGNORE = 10;
+  private static boolean isScreenOn = true;
   
-  public static void main(String[] args)
+  public static void main(String[] args) throws IOException
   {
     try
     {
@@ -89,6 +93,15 @@ public class GooglePhotosFrame
           if (inE.getKeyCode() == KeyEvent.VK_ESCAPE)
           {
             System.exit(0);
+          }
+          //try to wake the screen
+          try
+          {
+            screenOn();
+          }
+          catch(Exception e)
+          {
+            AppLogger.log(LogLevel.ERROR, "Error waking screen on key press" ,e);
           }
         }
       });
@@ -167,17 +180,21 @@ public class GooglePhotosFrame
       {
         try
         {
-          PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
-          if (photo != null)
+          checkAndSetAppropriateDisplayMode();
+          if (isScreenOn)
           {
-            AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
-            imagePanel.setImage(photo); 
-            checkAndSetAppropriateDisplayMode();
+            PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
+            if (photo != null)
+            {
+              AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
+              imagePanel.setImage(photo); 
+            }
+            else
+            {
+              AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
+            }
           }
-          else
-          {
-            AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
-          }
+          errorCounter = 0; //reset count if all tasks in a loop suceeded
         }
         catch (Exception e)
         {
@@ -187,14 +204,12 @@ public class GooglePhotosFrame
             throw new Exception("Max number of errors in main in a row exceeded. Quiting.");
           }
           errorCounter++;
-          continue;
         }
         
         if (imgQueue.getCancelled())
         {
           throw new Exception("Image task was cancelled. Quitting.");
         }
-        errorCounter = 0; //reset count if all tasks in a loop suceeded
         Thread.sleep(slideShowDelaySeconds * 1000);
       }
       
@@ -202,30 +217,100 @@ public class GooglePhotosFrame
     catch (Exception e)
     {
       AppLogger.log(LogLevel.ERROR, "Error in main: " + e.getMessage(), e); 
+      screenOn();
       System.exit(1);
     }
     AppLogger.log(LogLevel.ERROR, "Reached end of main(). Normally this should not happen.");
+    screenOn();
     System.exit(1);
   }
   
   private static void checkAndSetAppropriateDisplayMode()
   {
-    // TODO check the current time and either wake up or put display to sleep according to settings
+    // check the current time and either wake up or put display to sleep according to settings
     Calendar cal = Calendar.getInstance();
-    int curHour24 = cal.get(Calendar.HOUR_OF_DAY);
-    int curMin = cal.get(Calendar.MINUTE);
     boolean isWeekEnd = cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || 
       cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
-    
-    if (isWeekEnd)
+    try
     {
+      String weekDayOffTimeStr = AppProperties.getProperty(AppProperties.SCREEN_OFF_TIME_WEEKDAY_PROP); 
+      String weekDayOnTimeStr = AppProperties.getProperty(AppProperties.SCREEN_ON_TIME_WEEKDAY_PROP); 
+      String weekEndOffTimeStr = AppProperties.getProperty(AppProperties.SCREEN_OFF_TIME_WEEKEND_PROP); 
+      String weekEndOnTimeStr = AppProperties.getProperty(AppProperties.SCREEN_ON_TIME_WEEKEND_PROP);
       
+      if (StringUtil.isEmpty(weekDayOnTimeStr) ||
+          StringUtil.isEmpty(weekDayOffTimeStr) ||
+          StringUtil.isEmpty(weekEndOnTimeStr) ||
+          StringUtil.isEmpty(weekEndOffTimeStr))
+      {
+        throw new MissingResourceException("One or more screen control parameters are missing", 
+          AppProperties.class.getName(), "screen.*.time.*");
+      }
+      Date weekDayOnTime = createDateBasedOnTimeString(weekDayOnTimeStr);
+      Date weekDayOffTime = createDateBasedOnTimeString(weekDayOffTimeStr);
+      Date weekEndOnTime = createDateBasedOnTimeString(weekEndOnTimeStr);
+      Date weekEndOffTime = createDateBasedOnTimeString(weekEndOffTimeStr);
+      Date curTime = cal.getTime();
+      
+      
+      if (isWeekEnd)
+      {
+        if (curTime.after(weekEndOnTime) && curTime.before(weekEndOffTime))
+        {
+          screenOn();
+        }
+        else
+        {
+          screenOff();
+        }
+      }
+      else
+      {
+        if (curTime.after(weekDayOnTime) && curTime.before(weekDayOffTime))
+        {
+          screenOn();
+        }
+        else
+        {
+          screenOff();
+        }
+      }
     }
-    else
+    catch(Exception e)
     {
-      
+      AppLogger.log(LogLevel.ERROR, "Error while checking and setting screen mode: ", e);
     }
-    
+  }
+
+  private static Date createDateBasedOnTimeString(String inTimeStr)
+  {
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.HOUR_OF_DAY, Integer.valueOf(inTimeStr.split(":")[0]));
+    cal.set(Calendar.MINUTE, Integer.valueOf(inTimeStr.split(":")[1]));
+    cal.set(Calendar.SECOND, 0);
+    return cal.getTime();
+  }
+  
+  private static void screenOn() throws IOException
+  {
+    if (!isScreenOn)
+    {
+      String curDir = System.getProperty("user.dir");
+      AppLogger.log(LogLevel.INFO, "Turning screen ON");
+      new ProcessBuilder(curDir + "/screen.sh", "on").start();
+      isScreenOn = true;
+    }
+  }
+
+  private static void screenOff() throws IOException
+  {
+    if (isScreenOn)
+    {
+      String curDir = System.getProperty("user.dir");
+      AppLogger.log(LogLevel.INFO, "Turning screen OFF");
+      new ProcessBuilder(curDir + "/screen.sh", "off").start();
+      isScreenOn = false;
+    }
   }
 
   public class ImagePanel extends Panel
