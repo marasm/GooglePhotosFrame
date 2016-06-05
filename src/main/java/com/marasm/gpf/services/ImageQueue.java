@@ -24,6 +24,7 @@ import com.marasm.util.StringUtil;
 public class ImageQueue implements Runnable
 {
   private static final int MAX_QUEUE_SIZE = 10;
+  private static final int MAX_IMAGES_BEFORE_ALBUM_LIST_REFRESH = 600;
   private static final int FULL_QUEUE_WAIT_TIME = 2 * 60 * 1000;//2 minutes
   private static final int INITIAL_ERROR_RETRY_INTERVAL = 1 * 1000;//1 second
   private static final int MAX_ERROR_RETRY_INTERVAL = 15 * 60 * 1000;//5 minutes
@@ -59,6 +60,7 @@ public class ImageQueue implements Runnable
                                                          .build();
       boolean inErrorRecovery = false;
       albumsToIgnore = getAlbumsToIgnore();
+      int imagesProcessed = 0;
       
       while (!cancelled)
       {
@@ -66,9 +68,9 @@ public class ImageQueue implements Runnable
         {
           try
           {
-            if (albums.isEmpty())
+            if (albums.isEmpty() || imagesProcessed >= MAX_IMAGES_BEFORE_ALBUM_LIST_REFRESH)
             {
-              AppLogger.log(LogLevel.DEBUG, "Album list empty. Getting a fresh list.");
+              AppLogger.log(LogLevel.DEBUG, "Album list empty or needs a refresh. Getting a fresh list.");
               albums = photosService.getAllUserAlbums();
               if (albums == null || albums.isEmpty())
               {
@@ -105,6 +107,7 @@ public class ImageQueue implements Runnable
                 randomPhoto.getExifTags() != null ? randomPhoto.getExifTags().getTime() : null);
             AppLogger.log(LogLevel.DEBUG, "Picked photo: {}", randomPhoto.getGphotoId());
             imageQueue.add(photoDisplayVO);
+            imagesProcessed++;
             
             //all operations succeeded reser error flag
             inErrorRecovery = false;
