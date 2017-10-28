@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=GooglePhotoFrameApplication
+Path=/home/pi/googlePhotoFrame
+Exec=/home/pi/googlePhotoFrame/runGooglePhotosFrame.sh
+Terminal=true
+
