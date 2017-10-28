@@ -18,7 +18,6 @@ import com.marasm.gpf.util.AppProperties;
 import com.marasm.gpf.util.GPFUtils;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
 import com.marasm.logger.AppLogger;
-import com.marasm.logger.LogLevel;
 import com.marasm.util.StringUtil;
 
 public class ImageQueue implements Runnable
@@ -48,7 +47,7 @@ public class ImageQueue implements Runnable
   @Override
   public void run()
   {
-    AppLogger.log(LogLevel.DEBUG, "Starting image queue worker");
+    AppLogger.debug("Starting image queue worker");
     try
     {
       DeviceAuthService authService = new DeviceAuthService();
@@ -70,7 +69,7 @@ public class ImageQueue implements Runnable
           {
             if (albums.isEmpty() || imagesProcessed >= MAX_IMAGES_BEFORE_ALBUM_LIST_REFRESH)
             {
-              AppLogger.log(LogLevel.DEBUG, "Album list empty or needs a refresh. Getting a fresh list.");
+              AppLogger.debug("Album list empty or needs a refresh. Getting a fresh list.");
               albums = photosService.getAllUserAlbums();
               if (albums == null || albums.isEmpty())
               {
@@ -79,10 +78,10 @@ public class ImageQueue implements Runnable
             }
             // pick a random album and a random pic from it
             AlbumEntry randomAlbum = getRandomAlbum(albums);
-            AppLogger.log(LogLevel.DEBUG, "Picked album: {}", randomAlbum.getTitle().getPlainText());
+            AppLogger.debug("Picked album: {}", randomAlbum.getTitle().getPlainText());
             if (albumsToIgnore.contains(randomAlbum.getTitle().getPlainText()))
             {
-              AppLogger.log(LogLevel.DEBUG, "Album {} is in the list to be ignored, skipping.", 
+              AppLogger.debug("Album {} is in the list to be ignored, skipping.", 
                 randomAlbum.getTitle().getPlainText());
               continue;
             }
@@ -90,14 +89,14 @@ public class ImageQueue implements Runnable
             List<PhotoEntry> albumPhotos = photosService.getAlbumPhotos(randomAlbum.getGphotoId());
             if (albumPhotos.isEmpty())
             {
-              AppLogger.log(LogLevel.DEBUG, "Album {} is empty. Will pick another", 
+              AppLogger.debug("Album {} is empty. Will pick another", 
                 randomAlbum.getTitle().getPlainText());
               continue;
             }
             PhotoEntry randomPhoto = getRandomPhoto(albumPhotos);
             if (randomPhoto.getMediaContents() == null || randomPhoto.getMediaContents().isEmpty())
             {
-              AppLogger.log(LogLevel.DEBUG, "Photo does not have media contents. Skipping");
+              AppLogger.debug("Photo does not have media contents. Skipping");
               continue;
             }
             
@@ -105,7 +104,7 @@ public class ImageQueue implements Runnable
               new PhotoDisplayVO(GPFUtils.getSizeSpecificUrlForImage(randomPhoto.getMediaContents().get(0), screenSize),
                 randomAlbum.getTitle().getPlainText(),
                 randomPhoto.getExifTags() != null ? randomPhoto.getExifTags().getTime() : null);
-            AppLogger.log(LogLevel.DEBUG, "Picked photo: {}", randomPhoto.getGphotoId());
+            AppLogger.debug("Picked photo: {}", randomPhoto.getGphotoId());
             imageQueue.add(photoDisplayVO);
             imagesProcessed++;
             
@@ -114,7 +113,7 @@ public class ImageQueue implements Runnable
           }
           catch (Exception e)
           {
-            AppLogger.log(LogLevel.DEBUG, "Error detected: {}. Will try to recover.", e.getMessage());
+            AppLogger.debug("Error detected: {}. Will try to recover.", e.getMessage());
             if (!inErrorRecovery)
             {
               inErrorRecovery = true;
@@ -125,7 +124,7 @@ public class ImageQueue implements Runnable
             {
               if (e instanceof ServiceForbiddenException)// token expired ==> refresh
               {
-                AppLogger.log(LogLevel.INFO, "Access token expired. Refreshing token.");
+                AppLogger.info("Access token expired. Refreshing token.");
                 try
                 {
                   authService.refreshAndStoreAccessToken();
@@ -134,7 +133,7 @@ public class ImageQueue implements Runnable
                 catch (Exception refreshExc) 
                 {
                   //just log will retry after a pause
-                  AppLogger.log(LogLevel.WARNING, "Error while refreshing token. Will retry.", refreshExc); 
+                  AppLogger.warn("Error while refreshing token. Will retry.", refreshExc); 
                 }
               }
               Thread.sleep(waitTime);
@@ -142,7 +141,7 @@ public class ImageQueue implements Runnable
             }
             else 
             {
-              AppLogger.log(LogLevel.ERROR, 
+              AppLogger.error(
                 "all retries failed and backoff time limit exceeded: unable to recover :(");
               throw e;
             }
@@ -151,7 +150,7 @@ public class ImageQueue implements Runnable
         }
         else
         {
-          AppLogger.log(LogLevel.DEBUG, "Image queue is full. Wait...");
+          AppLogger.debug("Image queue is full. Wait...");
           try
           {
             Thread.sleep(FULL_QUEUE_WAIT_TIME);
@@ -165,10 +164,10 @@ public class ImageQueue implements Runnable
     }
     catch (Exception e)
     {
-      AppLogger.log(LogLevel.ERROR, "Unrecoverable Error: ", e);
+      AppLogger.error("Unrecoverable Error: ", e);
       cancelled = true;
     }
-    AppLogger.log(LogLevel.WARNING, "Image queue stopped!");
+    AppLogger.warn("Image queue stopped!");
   }
   
   protected List<String> getAlbumsToIgnore()
@@ -185,7 +184,7 @@ public class ImageQueue implements Runnable
     }
     catch (IOException e)
     {
-      AppLogger.log(LogLevel.WARNING,"Unable to get list of albums to ignore. Will use all albums.", e);
+      AppLogger.warn("Unable to get list of albums to ignore. Will use all albums.", e);
     }
     return res;
   }

@@ -33,7 +33,6 @@ import com.marasm.gpf.util.AppProperties;
 import com.marasm.gpf.valueobjects.DeviceCodeResponseVO;
 import com.marasm.gpf.valueobjects.PhotoDisplayVO;
 import com.marasm.logger.AppLogger;
-import com.marasm.logger.LogLevel;
 import com.marasm.util.StringUtil;
 
 /**
@@ -51,20 +50,26 @@ public class GooglePhotosFrame
     {
       AppLogger.initLogger("appLogger");
       
-      String version = AppProperties.getProperty(AppProperties.APP_VERSION_PROP);
+      String version = AppProperties.getProperty(
+        AppProperties.APP_VERSION_PROP);
       int slideShowDelaySeconds = Integer.valueOf(AppProperties.getProperty(
         AppProperties.SLIDE_SHOW_DELAY_PROP)).intValue();
-      boolean useProxy = Boolean.valueOf(AppProperties.getProperty(AppProperties.USE_PROXY_PROP));
-      AppLogger.log(LogLevel.DEBUG,"Starting Google Photos Frame v" + version);
-      AppLogger.log(LogLevel.DEBUG,"Slideshow Delay (s): " + slideShowDelaySeconds);
+      boolean useProxy = Boolean.valueOf(AppProperties.getProperty(
+        AppProperties.USE_PROXY_PROP));
+      AppLogger.debug("Starting Google Photos Frame v" + version);
+      AppLogger.debug("Slideshow Delay (s): " + slideShowDelaySeconds);
       
       if (useProxy)
       {
-        AppLogger.log(LogLevel.DEBUG, "Setting proxy parameters");
-        System.setProperty("http.proxyHost",  AppProperties.getProperty(AppProperties.HTTP_PROXY_HOST_PROP));
-        System.setProperty("http.proxyPort",  AppProperties.getProperty(AppProperties.HTTP_PROXY_PORT_PROP));
-        System.setProperty("https.proxyHost", AppProperties.getProperty(AppProperties.HTTPS_PROXY_HOST_PROP));
-        System.setProperty("https.proxyPort", AppProperties.getProperty(AppProperties.HTTPS_PROXY_PORT_PROP));
+        AppLogger.debug("Setting proxy parameters");
+        System.setProperty("http.proxyHost",  
+          AppProperties.getProperty(AppProperties.HTTP_PROXY_HOST_PROP));
+        System.setProperty("http.proxyPort",  
+          AppProperties.getProperty(AppProperties.HTTP_PROXY_PORT_PROP));
+        System.setProperty("https.proxyHost", 
+          AppProperties.getProperty(AppProperties.HTTPS_PROXY_HOST_PROP));
+        System.setProperty("https.proxyPort", 
+          AppProperties.getProperty(AppProperties.HTTPS_PROXY_PORT_PROP));
       }
       
       
@@ -97,7 +102,7 @@ public class GooglePhotosFrame
           }
           catch(Exception e)
           {
-            AppLogger.log(LogLevel.ERROR, "Error waking screen on key press" ,e);
+            AppLogger.error("Error waking screen on key press", e);
           }
           
           if (inE.getKeyCode() == KeyEvent.VK_ESCAPE)
@@ -114,11 +119,11 @@ public class GooglePhotosFrame
       DeviceAuthService service = new DeviceAuthService();
       if (service.hasStoredCredentials())
       {
-        AppLogger.log(LogLevel.DEBUG, "Found stored credentials");
+        AppLogger.debug("Found stored credentials");
       }
       else
       {
-        AppLogger.log(LogLevel.WARNING, "Stored credentials NOT found. Will request new.");
+        AppLogger.warn("Stored credentials NOT found. Will request new.");
         DeviceCodeResponseVO deviceCodeVO = service.getDeviceAuthCode();
         
         TextArea textArea = new TextArea();
@@ -140,14 +145,14 @@ public class GooglePhotosFrame
         waitingLbl.setBounds((int)(screenSize.getWidth()/2)-40, (int)(screenSize.getHeight()/2)+50, 80, 25);
         mainFrame.add(waitingLbl);
         
-        AppLogger.log(LogLevel.INFO, "Url={}", deviceCodeVO.getVerificationUrl());
-        AppLogger.log(LogLevel.INFO, "Code={}", deviceCodeVO.getUserCode());
+        AppLogger.info("Url={}", deviceCodeVO.getVerificationUrl());
+        AppLogger.info("Code={}", deviceCodeVO.getUserCode());
         
         long startTime = System.currentTimeMillis();
         TokenResponse token = null;
         while(System.currentTimeMillis() <= startTime + (1000 * deviceCodeVO.getExpiresIn()))
         {
-          AppLogger.log(LogLevel.DEBUG, "Waiting for Google authorization");
+          AppLogger.debug("Waiting for Google authorization");
           Thread.sleep(deviceCodeVO.getInterval() * 1000);
           
           token = service.getAccessToken(deviceCodeVO);
@@ -157,7 +162,7 @@ public class GooglePhotosFrame
         {
           throw new Exception("Timed out wating for device authorization");
         }
-        AppLogger.log(LogLevel.INFO, "Success! access token is: {}", token.getAccessToken());
+        AppLogger.info("Success! access token is: {}", token.getAccessToken());
         service.storeAccessTokenData(token);
         mainFrame.remove(textArea);
         mainFrame.remove(waitingLbl);
@@ -188,19 +193,20 @@ public class GooglePhotosFrame
             PhotoDisplayVO photo = imgQueue.getNextPhotoEntry();
             if (photo != null)
             {
-              AppLogger.log(LogLevel.DEBUG, "Showing Image: " + photo.getUrl());
+              AppLogger.debug("Showing Image: " + photo.getUrl());
               imagePanel.setImage(photo); 
             }
             else
             {
-              AppLogger.log(LogLevel.DEBUG, "Image queue is empty. Waiting for it to be populated.");
+              AppLogger.debug(
+                "Image queue is empty. Waiting for it to be populated.");
             }
           }
           errorCounter = 0; //reset count if all tasks in a loop suceeded
         }
         catch (Exception e)
         {
-          AppLogger.log(LogLevel.WARNING, "Error displaying image: ", e);
+          AppLogger.warn("Error displaying image: ", e);
           if (errorCounter >= MAX_CONSEQUITIVE_ERRORS_TO_IGNORE)
           {
             throw new Exception("Max number of errors in main in a row exceeded. Quiting.");
@@ -218,11 +224,11 @@ public class GooglePhotosFrame
     }
     catch (Exception e)
     {
-      AppLogger.log(LogLevel.ERROR, "Error in main: " + e.getMessage(), e); 
+      AppLogger.error("Error in main: " + e.getMessage(), e); 
       screenOn();
       System.exit(1);
     }
-    AppLogger.log(LogLevel.ERROR, "Reached end of main(). Normally this should not happen.");
+    AppLogger.error("Reached end of main(). Normally this should not happen.");
     screenOn();
     System.exit(1);
   }
@@ -280,7 +286,7 @@ public class GooglePhotosFrame
     }
     catch(Exception e)
     {
-      AppLogger.log(LogLevel.ERROR, "Error while checking and setting screen mode: ", e);
+      AppLogger.error("Error while checking and setting screen mode: ", e);
     }
   }
 
@@ -298,7 +304,7 @@ public class GooglePhotosFrame
     if (!isScreenOn)
     {
       String curDir = System.getProperty("user.dir");
-      AppLogger.log(LogLevel.INFO, "Turning screen ON");
+      AppLogger.info("Turning screen ON");
       new ProcessBuilder(curDir + "/screen.sh", "on").start();
       isScreenOn = true;
     }
@@ -309,7 +315,7 @@ public class GooglePhotosFrame
     if (isScreenOn)
     {
       String curDir = System.getProperty("user.dir");
-      AppLogger.log(LogLevel.INFO, "Turning screen OFF");
+      AppLogger.info("Turning screen OFF");
       new ProcessBuilder(curDir + "/screen.sh", "off").start();
       isScreenOn = false;
     }

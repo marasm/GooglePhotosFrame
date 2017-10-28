@@ -1,6 +1,6 @@
 package com.marasm.gpf.services;
 
-import static com.marasm.gpf.constants.GPFConstants.*;
+import static com.marasm.gpf.constants.GPFConstants.DEFAULT_USER;
 
 import java.io.IOException;
 import java.net.URL;
@@ -22,7 +22,6 @@ import com.google.gdata.data.photos.PhotoEntry;
 import com.google.gdata.data.photos.UserFeed;
 import com.google.gdata.util.ServiceException;
 import com.marasm.logger.AppLogger;
-import com.marasm.logger.LogLevel;
 
 public class PhotosService extends GoogleApiBaseService
 {
@@ -38,7 +37,7 @@ public class PhotosService extends GoogleApiBaseService
   public List<PhotoEntry> getAlbumPhotos(String inAlbumId) throws IOException, ServiceException
   {
     // Auto-generated method stub
-    AppLogger.log(LogLevel.DEBUG, "Getting photos list from album: {}", inAlbumId);
+    AppLogger.debug("Getting photos list from album: {}", inAlbumId);
     PicasawebService picasaService = getPicasaService();
     URL feedUrl = new URL("https://picasaweb.google.com/data/feed/api/user/" + DEFAULT_USER + "/albumid/" + inAlbumId);
     AlbumFeed feed = picasaService.getFeed(feedUrl, AlbumFeed.class);
@@ -54,7 +53,7 @@ public class PhotosService extends GoogleApiBaseService
   @SuppressWarnings("rawtypes")
   public List<AlbumEntry> getAllUserAlbums() throws IOException, ServiceException
   {
-    AppLogger.log(LogLevel.DEBUG, "Getting list of albums");
+    AppLogger.debug("Getting list of albums");
     PicasawebService picasaService = getPicasaService();
     URL feedUrl = new URL("https://picasaweb.google.com/data/feed/api/user/" + DEFAULT_USER + "?kind=album&access=all");
     UserFeed myUserFeed = picasaService.getFeed(feedUrl, UserFeed.class);
